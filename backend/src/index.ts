@@ -1,25 +1,31 @@
 import { Elysia, t } from "elysia";
 import { createDb } from "./db";
 import { faker } from "@faker-js/faker";
+import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
-  .get("/ping", () => "pong")
+  .use(
+    cors({
+      origin: ["http://localhost:5173"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      credentials: true,
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  )
   .decorate("db", createDb())
+  .get("/ping", () => "pong")
   .get("/", () => "Hello Elysia")
   .post("/seed", ({ db }) => {
     console.log("Seeding database with test data");
 
     const insertTriggerQuery = db.prepare(/* sql */ `
-      INSERT INTO triggers ( trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, ai_analysis, follow_up_questions, user_insights) VALUES (
+      INSERT INTO triggers ( trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name) VALUES (
         $trigger_event,
         $factual_description,
         $emotions,
         $meaning,
         $past_relationship,
         $trigger_name,
-        $ai_analysis,
-        $follow_up_questions,
-        $user_insights
       ) RETURNING *
       `);
     for (let i = 0; i < 10; i++) {
@@ -30,9 +36,6 @@ const app = new Elysia()
         $meaning: faker.lorem.sentence(),
         $past_relationship: faker.lorem.sentence(),
         $trigger_name: faker.lorem.word(),
-        $ai_analysis: faker.lorem.sentence(),
-        $follow_up_questions: faker.lorem.sentence(),
-        $user_insights: faker.lorem.sentence(),
       });
     }
   })
@@ -53,9 +56,6 @@ const app = new Elysia()
         AND meaning IS NOT NULL
         AND past_relationship IS NOT NULL
         AND trigger_name IS NOT NULL
-        AND ai_analysis IS NOT NULL
-        AND follow_up_questions IS NOT NULL
-        AND user_insights IS NOT NULL
         ORDER BY id DESC
         LIMIT $limit
         `
@@ -85,29 +85,23 @@ const app = new Elysia()
       console.log("Posting new trigger", body);
 
       const insertTriggerQuery = db.prepare(/* sql */ `
-       INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, ai_analysis, follow_up_questions, user_insights) VALUES (
+        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name) VALUES (
         $trigger_event,
         $factual_description,
         $emotions,
         $meaning,
         $past_relationship,
-        $trigger_name,
-        $ai_analysis,
-        $follow_up_questions,
-        $user_insights
+        $trigger_name
       ) RETURNING *
         `);
 
       const insertTrigger = insertTriggerQuery.get({
-        $trigger_event: body.trigger_event,
-        $factual_description: body.factual_description,
+        $trigger_event: body.triggerEvent,
+        $factual_description: body.factualDescription,
         $emotions: body.emotions,
         $meaning: body.meaning,
-        $past_relationship: body.past_relationship,
-        $trigger_name: body.trigger_name,
-        $ai_analysis: body.ai_analysis,
-        $follow_up_questions: body.follow_up_questions,
-        $user_insights: body.user_insights,
+        $past_relationship: body.pastRelationship,
+        $trigger_name: body.triggerName,
       });
 
       if (!insertTrigger) {
@@ -120,15 +114,12 @@ const app = new Elysia()
     },
     {
       body: t.Object({
-        trigger_event: t.String(),
-        factual_description: t.String(),
+        triggerEvent: t.String(),
+        factualDescription: t.String(),
         emotions: t.String(),
         meaning: t.String(),
-        past_relationship: t.String(),
-        trigger_name: t.String(),
-        ai_analysis: t.String(),
-        follow_up_questions: t.String(),
-        user_insights: t.String(),
+        pastRelationship: t.String(),
+        triggerName: t.String(),
       }),
     }
   )
