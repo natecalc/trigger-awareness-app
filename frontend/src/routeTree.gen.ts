@@ -11,20 +11,27 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as TriggersImport } from './routes/triggers'
 import { Route as IndexImport } from './routes/index'
+import { Route as TriggersIndexImport } from './routes/triggers/index'
+import { Route as TriggersTriggerIdImport } from './routes/triggers/$triggerId'
 
 // Create/Update Routes
-
-const TriggersRoute = TriggersImport.update({
-  id: '/triggers',
-  path: '/triggers',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TriggersIndexRoute = TriggersIndexImport.update({
+  id: '/triggers/',
+  path: '/triggers/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TriggersTriggerIdRoute = TriggersTriggerIdImport.update({
+  id: '/triggers/$triggerId',
+  path: '/triggers/$triggerId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +46,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/triggers': {
-      id: '/triggers'
+    '/triggers/$triggerId': {
+      id: '/triggers/$triggerId'
+      path: '/triggers/$triggerId'
+      fullPath: '/triggers/$triggerId'
+      preLoaderRoute: typeof TriggersTriggerIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/triggers/': {
+      id: '/triggers/'
       path: '/triggers'
       fullPath: '/triggers'
-      preLoaderRoute: typeof TriggersImport
+      preLoaderRoute: typeof TriggersIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/triggers': typeof TriggersRoute
+  '/triggers/$triggerId': typeof TriggersTriggerIdRoute
+  '/triggers': typeof TriggersIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/triggers': typeof TriggersRoute
+  '/triggers/$triggerId': typeof TriggersTriggerIdRoute
+  '/triggers': typeof TriggersIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/triggers': typeof TriggersRoute
+  '/triggers/$triggerId': typeof TriggersTriggerIdRoute
+  '/triggers/': typeof TriggersIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/triggers'
+  fullPaths: '/' | '/triggers/$triggerId' | '/triggers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/triggers'
-  id: '__root__' | '/' | '/triggers'
+  to: '/' | '/triggers/$triggerId' | '/triggers'
+  id: '__root__' | '/' | '/triggers/$triggerId' | '/triggers/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  TriggersRoute: typeof TriggersRoute
+  TriggersTriggerIdRoute: typeof TriggersTriggerIdRoute
+  TriggersIndexRoute: typeof TriggersIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  TriggersRoute: TriggersRoute,
+  TriggersTriggerIdRoute: TriggersTriggerIdRoute,
+  TriggersIndexRoute: TriggersIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/triggers"
+        "/triggers/$triggerId",
+        "/triggers/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/triggers": {
-      "filePath": "triggers.tsx"
+    "/triggers/$triggerId": {
+      "filePath": "triggers/$triggerId.tsx"
+    },
+    "/triggers/": {
+      "filePath": "triggers/index.tsx"
     }
   }
 }

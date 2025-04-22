@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAddTrigger } from "@/hooks/use-triggers";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronsRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,9 +22,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [triggerFormStep, setTriggerFormStep] = useState(1);
+  const [triggerFormStep, setTriggerFormStep] = useState(0);
 
-  const { mutate: addTrigger } = useAddTrigger();
+  const { mutate: addTrigger, context, data } = useAddTrigger();
 
   const formSchema = z.object({
     triggerEvent: z.string().min(1, "Please describe the triggering event"),
@@ -182,12 +182,13 @@ function Index() {
                   step towards greater self-awareness and emotional
                   understanding.
                 </p>
-                <Button
-                  className="mt-4 w-full"
-                  variant="default"
-                  onClick={backStep}
-                >
-                  View Trigger
+                <Button className="mt-4 w-full" variant="default" asChild>
+                  <Link
+                    to="/triggers/$triggerId"
+                    params={{ triggerId: data?.id.toString() }}
+                  >
+                    View Trigger
+                  </Link>
                 </Button>
               </div>
             )}

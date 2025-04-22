@@ -7,10 +7,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useDeleteTrigger, useTriggers } from "@/hooks/use-triggers";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { LucideNotebookPen, Trash } from "lucide-react";
 
-export const Route = createFileRoute("/triggers")({
+export const Route = createFileRoute("/triggers/")({
   component: RouteComponent,
 });
 
@@ -61,12 +61,13 @@ function RouteComponent() {
               </p>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button
-                variant="outline"
-                disabled
-                onClick={() => console.log("View Trigger Details")}
-              >
-                Reflect
+              <Button variant="outline" asChild>
+                <Link
+                  to="/triggers/$triggerId"
+                  params={{ triggerId: trigger.id.toString() }}
+                >
+                  Reflect
+                </Link>
               </Button>
               <Button
                 variant="destructive"
