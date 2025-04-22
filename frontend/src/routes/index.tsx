@@ -9,55 +9,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAddTrigger } from "@/hooks/use-triggers";
 import { createFileRoute } from "@tanstack/react-router";
-import { PlusSquareIcon } from "lucide-react";
+import { ChevronsRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useState } from "react";
 import { TagsInput } from "@/components/ui/tags-input";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const [showForm, setShowForm] = useState(false);
+  const [triggerFormStep, setTriggerFormStep] = useState(1);
 
-  return (
-    <div className="p-2 space-y-8 flex justify-center">
-      <article className="p-2 space-y-8 max-w-3xl w-full">
-        <section className="welcome-section border rounded-md p-4 space-y-8">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold">
-              Welcome to Trigger Tracker 🌱
-            </h1>
-            <p className="text-secondary-foreground">
-              Your personal space for mindful self-awareness. Document your
-              emotional triggers, gain insights into your patterns, and develop
-              healthier responses over time. Each entry is a step toward greater
-              emotional understanding.
-            </p>
-          </div>
-          <Button
-            className="bg-blue-500 text-white hover:bg-blue-600 w-full py-8"
-            size="lg"
-            onClick={() => setShowForm(!showForm)}
-            hidden={showForm}
-          >
-            <div className="flex items-center gap-2">
-              <PlusSquareIcon />
-              <p>Document a new trigger</p>
-            </div>
-          </Button>
-        </section>
-
-        {showForm && <CreateTriggerFlow />}
-      </article>
-    </div>
-  );
-}
-
-const CreateTriggerFlow = () => {
   const { mutate: addTrigger } = useAddTrigger();
 
   const formSchema = z.object({
@@ -93,8 +59,6 @@ const CreateTriggerFlow = () => {
     mode: "onChange",
   });
 
-  const [triggerFormStep, setTriggerFormStep] = useState(1);
-
   const nextStep = () => {
     setTriggerFormStep(triggerFormStep + 1);
     window.scrollTo(0, 0);
@@ -118,7 +82,7 @@ const CreateTriggerFlow = () => {
   };
 
   return (
-    <div>
+    <div className="p-2 space-y-8 flex justify-center">
       {/* <NavigationTop className={"md:flex"}>
         {onBoardStep === 1 && (
           <NavButton
@@ -130,7 +94,7 @@ const CreateTriggerFlow = () => {
         )}
         {onBoardStep !== 1 && <NavBackButton callback={backStep} />}
       </NavigationTop> */}
-      <main className="container px-4 py-10 pb-16">
+      <main className="container px-4 py-10 pb-16 p-2 space-y-8 max-w-3xl w-full">
         <div className="pb-4">
           {/* <TaskProgressBar
             completedTasks={onBoardStep}
@@ -138,6 +102,30 @@ const CreateTriggerFlow = () => {
             barText="Progress"
           /> */}
         </div>
+
+        {triggerFormStep == 0 && (
+          <section className="welcome-section p-4 space-y-8">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold">Welcome to TriggerMap 🌱</h1>
+              <p className="text-secondary-foreground">
+                Your personal space for mindful self-awareness. Document your
+                emotional triggers, gain insights into your patterns, and
+                develop healthier responses over time. Each entry is a step
+                toward greater emotional understanding.
+              </p>
+            </div>
+            <Button
+              className="bg-blue-500 text-white hover:bg-blue-600 w-full py-8 shadow-2xl"
+              size="lg"
+              onClick={() => setTriggerFormStep(1)}
+            >
+              <div className="flex items-center gap-2">
+                <p>Document a new trigger</p>
+                <ChevronsRight />
+              </div>
+            </Button>
+          </section>
+        )}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleAddTrigger)}
@@ -208,7 +196,7 @@ const CreateTriggerFlow = () => {
       </main>
     </div>
   );
-};
+}
 
 const TriggerEvent = ({
   nextStep,
@@ -227,19 +215,21 @@ const TriggerEvent = ({
     form.getFieldState("triggerEvent").invalid;
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold">What triggered you?</h1>
-      <p className="text-secondary-foreground">
-        Describe the specific event, words, or situation that triggered your
-        reaction.
-      </p>
+    <article className="space-y-4">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold">What triggered you?</h1>
+        <p className="text-secondary-foreground">
+          Describe the specific event, words, or situation that triggered your
+          reaction.
+        </p>
+      </div>
       <FormField
         control={form.control}
         name="triggerEvent"
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input
+              <Textarea
                 {...field}
                 placeholder="Describe the specific event, words, or situation that triggered your reaction"
                 onChange={(e) => {
@@ -253,20 +243,21 @@ const TriggerEvent = ({
         )}
       />
 
-      <Button className="mt-4" onClick={backStep}>
-        Back
-      </Button>
-      <Button
-        className="mt-4"
-        disabled={isDisabled}
-        onClick={() => {
-          form.setValue("triggerEvent", form.getValues().triggerEvent);
-          nextStep();
-        }}
-      >
-        Next
-      </Button>
-    </div>
+      <footer className="flex justify-between">
+        <Button onClick={backStep} variant="secondary">
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue("triggerEvent", form.getValues().triggerEvent);
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
+      </footer>
+    </article>
   );
 };
 
@@ -285,7 +276,7 @@ const FactualDescription = ({
     factualDescriptionValue.trim() === "" ||
     form.getFieldState("factualDescription").invalid;
   return (
-    <div>
+    <article className="space-y-4">
       <h1 className="text-3xl font-bold">Just the Facts</h1>
       <p className="text-secondary-foreground">
         Describe what happened objectively, without interpretation or judgment.
@@ -296,7 +287,7 @@ const FactualDescription = ({
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input
+              <Textarea
                 placeholder="Describe what happened objectively, without interpretation or judgment"
                 {...field}
                 onChange={(e) => {
@@ -310,23 +301,24 @@ const FactualDescription = ({
         )}
       />
 
-      <Button className="mt-4" onClick={backStep}>
-        Back
-      </Button>
-      <Button
-        className="mt-4"
-        disabled={isDisabled}
-        onClick={() => {
-          form.setValue(
-            "factualDescription",
-            form.getValues().factualDescription
-          );
-          nextStep();
-        }}
-      >
-        Next
-      </Button>
-    </div>
+      <footer className="flex justify-between">
+        <Button variant="secondary" onClick={backStep}>
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue(
+              "factualDescription",
+              form.getValues().factualDescription
+            );
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
+      </footer>
+    </article>
   );
 };
 
@@ -346,7 +338,7 @@ const EmotionalResponse = ({
     form.getFieldState("emotions").invalid;
 
   return (
-    <div>
+    <article className="space-y-4">
       <h1 className="text-3xl font-bold">Emotional Response</h1>
       <p className="text-secondary-foreground">
         What emotions came up? Try to name them specifically (e.g., anger,
@@ -373,20 +365,21 @@ const EmotionalResponse = ({
         )}
       />
 
-      <Button className="mt-4" onClick={backStep}>
-        Back
-      </Button>
-      <Button
-        className="mt-4"
-        disabled={isDisabled}
-        onClick={() => {
-          form.setValue("emotions", form.getValues().emotions);
-          nextStep();
-        }}
-      >
-        Next
-      </Button>
-    </div>
+      <footer className="flex justify-between">
+        <Button variant="secondary" onClick={backStep}>
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue("emotions", form.getValues().emotions);
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
+      </footer>
+    </article>
   );
 };
 
@@ -405,7 +398,7 @@ const MeaningAndInterpretation = ({
     meaningValue.trim() === "" ||
     form.getFieldState("meaning").invalid;
   return (
-    <div>
+    <article className="space-y-4">
       <h1 className="text-3xl font-bold">Meaning & Interpretation</h1>
       <p className="text-secondary-foreground">
         What meaning did you attach to this situation? What story did you tell
@@ -417,7 +410,7 @@ const MeaningAndInterpretation = ({
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input
+              <Textarea
                 placeholder="What meaning did you attach to this situation? What story did you tell yourself?"
                 {...field}
                 onChange={(e) => {
@@ -431,20 +424,21 @@ const MeaningAndInterpretation = ({
         )}
       />
 
-      <Button className="mt-4" onClick={backStep}>
-        Back
-      </Button>
-      <Button
-        className="mt-4"
-        disabled={isDisabled}
-        onClick={() => {
-          form.setValue("meaning", form.getValues().meaning);
-          nextStep();
-        }}
-      >
-        Next
-      </Button>
-    </div>
+      <footer className="flex justify-between">
+        <Button variant="secondary" onClick={backStep}>
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue("meaning", form.getValues().meaning);
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
+      </footer>
+    </article>
   );
 };
 
@@ -463,7 +457,7 @@ const HistoricalConnection = ({
     pastRelationshipValue.trim() === "" ||
     form.getFieldState("pastRelationship").invalid;
   return (
-    <div>
+    <article className="space-y-4">
       <h1 className="text-3xl font-bold">Historical Connection</h1>
       <p className="text-secondary-foreground">
         Does this remind you of past experiences or relationships? How so?
@@ -474,7 +468,7 @@ const HistoricalConnection = ({
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input
+              <Textarea
                 placeholder="Does this remind you of past experiences or relationships? How so?"
                 {...field}
                 onChange={(e) => {
@@ -488,20 +482,24 @@ const HistoricalConnection = ({
         )}
       />
 
-      <Button className="mt-4" onClick={backStep}>
-        Back
-      </Button>
-      <Button
-        className="mt-4"
-        disabled={isDisabled}
-        onClick={() => {
-          form.setValue("pastRelationship", form.getValues().pastRelationship);
-          nextStep();
-        }}
-      >
-        Next
-      </Button>
-    </div>
+      <footer className="flex justify-between">
+        <Button variant="secondary" onClick={backStep}>
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue(
+              "pastRelationship",
+              form.getValues().pastRelationship
+            );
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
+      </footer>
+    </article>
   );
 };
 
@@ -522,7 +520,7 @@ const NameThisPattern = ({
     triggerNameValue.trim() === "" ||
     form.getFieldState("triggerName").invalid;
   return (
-    <div>
+    <article className="space-y-4">
       <h1 className="text-3xl font-bold">Name This Pattern</h1>
       <p className="text-secondary-foreground">
         Give this trigger a memorable name to help identify it in the future.
@@ -547,20 +545,21 @@ const NameThisPattern = ({
         )}
       />
 
-      <Button className="mt-4" onClick={backStep}>
-        Back
-      </Button>
-      <Button
-        className="mt-4"
-        disabled={isDisabled}
-        onClick={() => {
-          form.setValue("triggerName", form.getValues().triggerName);
-          handleAddTrigger();
-          nextStep();
-        }}
-      >
-        Next
-      </Button>
-    </div>
+      <footer className="flex justify-between">
+        <Button variant="secondary" onClick={backStep}>
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue("triggerName", form.getValues().triggerName);
+            handleAddTrigger();
+            nextStep();
+          }}
+        >
+          Submit Trigger
+        </Button>
+      </footer>
+    </article>
   );
 };

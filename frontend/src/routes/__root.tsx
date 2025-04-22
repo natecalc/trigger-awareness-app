@@ -32,7 +32,14 @@ function RootComponent() {
       <main>
         <header>
           <div className="flex flex-row items-center p-4 space-x-4">
-            <h1 className="text-xl font-bold">🧘‍♂️ Trigger Tracker </h1>
+            <img
+              src="/logo.png"
+              alt="TriggerMap Logo"
+              width={64}
+              height={64}
+              className="rounded-full"
+            />
+            <h1 className="text-xl font-bold">TriggerMap </h1>
             <nav className="p-2 flex gap-2 text-lg">
               <a href="/">Home</a>
               <a href="/triggers">Triggers</a>

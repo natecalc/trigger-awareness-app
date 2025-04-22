@@ -54,7 +54,7 @@ export const TagsInput = ({
         {initialValue.map((tag, index) => (
           <Badge
             key={index}
-            className="rounded-full bg-amber-200 px-2 py-1 flex items-center gap-1"
+            className="rounded-full bg-amber-400 px-2 py-1 flex items-center gap-1"
           >
             {tag}
             <button
