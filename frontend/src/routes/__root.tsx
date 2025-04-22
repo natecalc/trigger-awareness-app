@@ -34,7 +34,8 @@ function RootComponent() {
           <div className="flex flex-row items-center p-4 space-x-4">
             <h1 className="text-xl font-bold">🧘‍♂️ Trigger Tracker </h1>
             <nav className="p-2 flex gap-2 text-lg">
-              {/* Insert Page Links */}
+              <a href="/">Home</a>
+              <a href="/triggers">Triggers</a>
             </nav>
           </div>
         </header>
