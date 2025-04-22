@@ -1,12 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useApi } from "./use-api";
 import { queryClient } from "@/routes/__root";
+import { toast } from "sonner";
 
 interface TriggerApiResponse {
   id: number;
   trigger_event: string;
   factual_description: string;
-  emotions: string;
+  emotions: string[];
   meaning: string;
   past_relationship: string;
   trigger_name: string;
@@ -22,7 +23,7 @@ export interface TriggerEvent {
   triggerEvent: string;
   factualDescription: string;
   emotions: string;
-  meaning: string;
+  meaning: string[];
   pastRelationship: string;
   triggerName: string;
   aiAnalysis: string;
@@ -61,7 +62,7 @@ export const useTriggers = () => {
 interface AddTriggerDto {
   triggerEvent: string;
   factualDescription: string;
-  emotions: string;
+  emotions: string[];
   meaning: string;
   pastRelationship: string;
   triggerName: string;
@@ -74,6 +75,17 @@ export const useAddTrigger = () => {
       return await post("/triggers", trigger);
     },
     onSuccess: async () => {
+      toast("New Trigger Added", {
+        icon: "🧘‍♂️",
+        description: "One step closer to emotional clarity.",
+        duration: 3000,
+        action: {
+          label: "Close",
+          onClick: () => {
+            toast.dismiss();
+          },
+        },
+      });
       await queryClient.invalidateQueries({ queryKey: ["triggers"] });
     },
   });
@@ -86,6 +98,17 @@ export const useDeleteTrigger = () => {
       return await del(`/triggers/${triggerId}`);
     },
     onSuccess: async () => {
+      toast("Trigger Deleted", {
+        icon: "🗑️",
+        description: "Healing is a process, not a destination.",
+        duration: 3000,
+        action: {
+          label: "Close",
+          onClick: () => {
+            toast.dismiss();
+          },
+        },
+      });
       await queryClient.invalidateQueries({ queryKey: ["triggers"] });
     },
   });

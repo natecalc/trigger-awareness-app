@@ -32,7 +32,7 @@ const app = new Elysia()
       insertTriggerQuery.run({
         $trigger_event: faker.lorem.sentence(),
         $factual_description: faker.lorem.paragraph(),
-        $emotions: faker.lorem.words(3),
+        $emotions: JSON.stringify([faker.lorem.words(3), faker.lorem.words(3)]),
         $meaning: faker.lorem.sentence(),
         $past_relationship: faker.lorem.sentence(),
         $trigger_name: faker.lorem.word(),
@@ -98,7 +98,7 @@ const app = new Elysia()
       const insertTrigger = insertTriggerQuery.get({
         $trigger_event: body.triggerEvent,
         $factual_description: body.factualDescription,
-        $emotions: body.emotions,
+        $emotions: JSON.stringify(body.emotions),
         $meaning: body.meaning,
         $past_relationship: body.pastRelationship,
         $trigger_name: body.triggerName,
@@ -116,7 +116,7 @@ const app = new Elysia()
       body: t.Object({
         triggerEvent: t.String(),
         factualDescription: t.String(),
-        emotions: t.String(),
+        emotions: t.Array(t.String()),
         meaning: t.String(),
         pastRelationship: t.String(),
         triggerName: t.String(),

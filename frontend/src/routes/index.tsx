@@ -21,11 +21,12 @@ import {
   useTriggers,
 } from "@/hooks/use-triggers";
 import { createFileRoute } from "@tanstack/react-router";
-import { PlusSquareIcon } from "lucide-react";
+import { LucideNotebookPen, PlusSquareIcon, Trash } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { TagsInput } from "@/components/ui/tags-input";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -34,22 +35,26 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [showForm, setShowForm] = useState(false);
 
-  const {
-    data: triggers,
-    isLoading: triggersIsLoading,
-    isError: triggersIsError,
-  } = useTriggers();
-
   const { mutate: addTrigger } = useAddTrigger();
-  const { mutate: deleteTrigger } = useDeleteTrigger();
 
   const formSchema = z.object({
-    triggerEvent: z.string().min(1, "Trigger Event is required"),
-    factualDescription: z.string().min(1, "Factual Description is required"),
-    emotions: z.string().min(1, "Emotions are required"),
-    meaning: z.string().min(1, "Meaning is required"),
-    pastRelationship: z.string().min(1, "Past Relationship is required"),
-    triggerName: z.string().min(1, "Trigger Name is required"),
+    triggerEvent: z.string().min(1, "Please describe the triggering event"),
+    factualDescription: z
+      .string()
+      .min(1, "A factual description helps provide clarity"),
+    emotions: z
+      .string()
+      .min(1, "Naming your emotions is an important step")
+      .array(),
+    meaning: z
+      .string()
+      .min(1, "Understanding the meaning helps process the trigger"),
+    pastRelationship: z
+      .string()
+      .min(1, "Connecting to past experiences provides insight"),
+    triggerName: z
+      .string()
+      .min(1, "Naming your trigger helps you recognize patterns"),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,7 +62,7 @@ function Index() {
     defaultValues: {
       triggerEvent: "",
       factualDescription: "",
-      emotions: "",
+      emotions: [],
       meaning: "",
       pastRelationship: "",
       triggerName: "",
@@ -77,27 +82,29 @@ function Index() {
   };
 
   return (
-    <div className="p-2 space-y-8">
-      <article className="p-2 space-y-8">
+    <div className="p-2 space-y-8 flex justify-center">
+      <article className="p-2 space-y-8 max-w-3xl w-full">
         <section className="welcome-section border rounded-md p-4 space-y-8">
           <div className="space-y-1">
             <h1 className="text-3xl font-bold">
-              Welcome to Trigger Tracker 👋
+              Welcome to Trigger Tracker 🌱
             </h1>
             <p className="text-secondary-foreground">
-              This is a simple web application that allows you to track and
-              manage your triggers. You can add, edit, and delete triggers, as
-              well as view their details and history.
+              Your personal space for mindful self-awareness. Document your
+              emotional triggers, gain insights into your patterns, and develop
+              healthier responses over time. Each entry is a step toward greater
+              emotional understanding.
             </p>
           </div>
           <Button
             className="bg-blue-500 text-white hover:bg-blue-600 w-full py-8"
             size="lg"
             onClick={() => setShowForm(!showForm)}
+            hidden={showForm}
           >
             <div className="flex items-center gap-2">
               <PlusSquareIcon />
-              <p>Add a trigger</p>
+              <p>Document a new trigger</p>
             </div>
           </Button>
 
@@ -113,12 +120,12 @@ function Index() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-bold">
-                        Trigger Event
+                        What triggered you?
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="What happened that triggered you?"
+                          placeholder="Describe the specific event, words, or situation that triggered your reaction"
                           onChange={(e) => {
                             field.onChange(e);
                           }}
@@ -134,11 +141,11 @@ function Index() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-bold">
-                        Factual Description
+                        Just the Facts
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="What happened factually?"
+                          placeholder="Describe what happened objectively, without interpretation or judgment"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -155,15 +162,16 @@ function Index() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-bold">
-                        Emotions
+                        Emotional Response
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="How did it make you feel?"
+                        <TagsInput
                           {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value);
                           }}
+                          placeholder="What emotions came up? Try to name them specifically (e.g., anger, shame, fear)"
                         />
                       </FormControl>
                       <FormMessage />
@@ -176,11 +184,11 @@ function Index() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-bold">
-                        Meaning
+                        Meaning & Interpretation
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="What meaning did you make out of this situation?"
+                          placeholder="What meaning did you attach to this situation? What story did you tell yourself?"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -198,11 +206,11 @@ function Index() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-bold">
-                        Past Relationship
+                        Historical Connection
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Does this remind you of a past relationship?"
+                          placeholder="Does this remind you of past experiences or relationships? How so?"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -219,11 +227,11 @@ function Index() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-lg font-bold">
-                        Trigger Name
+                        Name This Pattern
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="What would you like to name this trigger?"
+                          placeholder="Give this trigger a memorable name to help identify it in the future"
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -242,67 +250,134 @@ function Index() {
                     form.formState.isSubmitting || !form.formState.isValid
                   }
                 >
-                  Add Trigger
+                  Save This Trigger
                 </Button>
               </form>
             </Form>
           </fieldset>
         </section>
 
-        <section className="trigger-list-section">
-          <h2 className="text-2xl font-bold">Your Triggers</h2>
-          <p className="text-lg">
-            Here are the triggers you have added. You can click on each trigger
-            to view its details and history.
-          </p>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 py-8">
-            {triggersIsLoading && <p>Loading...</p>}
-            {triggersIsError && <p>Error loading triggers</p>}
-            {triggers &&
-              triggers.map((trigger) => (
-                <Card key={trigger.id} className="trigger-card">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-bold capitalize">
-                      {trigger.triggerName}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-500">
-                      Trigger Event: {trigger.triggerEvent}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Factual Description: {trigger.factualDescription}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Emotions: {trigger.emotions}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Meaning: {trigger.meaning}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Past Relationship: {trigger.pastRelationship}
-                    </p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button
-                      variant="outline"
-                      disabled
-                      onClick={() => console.log("View Trigger Details")}
-                    >
-                      View Details
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => deleteTrigger(trigger.id)}
-                    >
-                      Delete
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-          </div>
-        </section>
+        <RecentTriggerPanels />
       </article>
     </div>
   );
 }
+
+const RecentTriggerPanels = () => {
+  const {
+    data: triggers,
+    isLoading: triggersIsLoading,
+    isError: triggersIsError,
+  } = useTriggers();
+
+  const { mutate: deleteTrigger } = useDeleteTrigger();
+
+  return (
+    <section className="recent-trigger-list">
+      <h2 className="text-2xl font-bold">Your Trigger Journal</h2>
+      <p className="text-lg">
+        Below is your collection of documented triggers. Each entry represents a
+        learning opportunity and a chance to respond differently next time.
+      </p>
+      <ul className="flex flex-col py-8 gap-2">
+        {triggersIsLoading && <p>Loading your trigger journal...</p>}
+        {triggersIsError && (
+          <p>
+            We encountered an issue loading your triggers. Please try refreshing
+            the page.
+          </p>
+        )}
+        {triggers &&
+          triggers.map((trigger) => (
+            <li key={trigger.id}>
+              <Card className="flex flex-row items-center justify-between p-4">
+                <div>
+                  <h3 className="text-xl font-bold capitalize">
+                    {trigger.triggerName}
+                  </h3>
+                  <p className="text-sm text-gray-500 capitalize">
+                    {trigger.triggerEvent}
+                  </p>
+                </div>
+                <div className="flex flex-row items-center gap-2">
+                  <Button variant="outline" size="icon" disabled>
+                    <LucideNotebookPen className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" onClick={() => deleteTrigger(trigger.id)}>
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </Card>
+            </li>
+          ))}
+      </ul>
+    </section>
+  );
+};
+
+const TriggerCards = () => {
+  const {
+    data: triggers,
+    isLoading: triggersIsLoading,
+    isError: triggersIsError,
+  } = useTriggers();
+  const { mutate: deleteTrigger } = useDeleteTrigger();
+
+  return (
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 py-8">
+      {triggersIsLoading && <p>Loading your trigger journal...</p>}
+      {triggersIsError && (
+        <p>
+          We encountered an issue loading your triggers. Please try refreshing
+          the page.
+        </p>
+      )}
+      {triggers &&
+        triggers.map((trigger) => (
+          <Card key={trigger.id} className="trigger-card">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold capitalize">
+                {trigger.triggerName}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-500">
+                <span className="font-medium">Trigger:</span>{" "}
+                {trigger.triggerEvent}
+              </p>
+              <p className="text-sm text-gray-500">
+                <span className="font-medium">Facts:</span>{" "}
+                {trigger.factualDescription}
+              </p>
+              <p className="text-sm text-gray-500">
+                <span className="font-medium">Emotions:</span>{" "}
+                {trigger.emotions}
+              </p>
+              <p className="text-sm text-gray-500">
+                <span className="font-medium">Meaning:</span> {trigger.meaning}
+              </p>
+              <p className="text-sm text-gray-500">
+                <span className="font-medium">Connection:</span>{" "}
+                {trigger.pastRelationship}
+              </p>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button
+                variant="outline"
+                disabled
+                onClick={() => console.log("View Trigger Details")}
+              >
+                Reflect
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteTrigger(trigger.id)}
+              >
+                Remove
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+    </div>
+  );
+};
