@@ -12,7 +12,9 @@ export const Route = createRootRoute({
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex w-full items-center justify-center">
-      <div className="p-0 md:p-8 ">{children}</div>
+      <div className="p-0 md:p-8 w-full items-center justify-center flex">
+        {children}
+      </div>
     </div>
   );
 };

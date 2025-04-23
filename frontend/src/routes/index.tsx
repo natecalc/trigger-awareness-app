@@ -16,6 +16,7 @@ import { useForm, UseFormReturn } from "react-hook-form";
 import { useState } from "react";
 import { TagsInput } from "@/components/ui/tags-input";
 import { Textarea } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [triggerFormStep, setTriggerFormStep] = useState(0);
 
-  const { mutate: addTrigger, context, data } = useAddTrigger();
+  const { mutate: addTrigger, data, isPending } = useAddTrigger();
 
   const formSchema = z.object({
     triggerEvent: z.string().min(1, "Please describe the triggering event"),
@@ -174,24 +175,33 @@ function Index() {
                 handleAddTrigger={handleAddTrigger}
               />
             )}
-            {triggerFormStep == 7 && (
-              <div>
-                <h1 className="text-3xl font-bold">All Done! 🎉</h1>
-                <p className="text-secondary-foreground">
-                  You've successfully documented your trigger. This process is a
-                  step towards greater self-awareness and emotional
-                  understanding.
-                </p>
-                <Button className="mt-4 w-full" variant="default" asChild>
-                  <Link
-                    to="/triggers/$triggerId"
-                    params={{ triggerId: data?.id.toString() }}
-                  >
-                    View Trigger
-                  </Link>
-                </Button>
-              </div>
-            )}
+            {triggerFormStep == 7 &&
+              (isPending ? (
+                <section>
+                  <Spinner size="medium" />
+                  <h1 className="text-3xl font-bold">Submitting...</h1>
+                  <p className="text-secondary-foreground">
+                    Your trigger is being submitted. Please wait a moment.
+                  </p>
+                </section>
+              ) : (
+                <section>
+                  <h1 className="text-3xl font-bold">All Done! 🎉</h1>
+                  <p className="text-secondary-foreground">
+                    You've successfully documented your trigger. This process is
+                    a step towards greater self-awareness and emotional
+                    understanding.
+                  </p>
+                  <Button className="mt-4 w-full" variant="default" asChild>
+                    <Link
+                      to="/triggers/$triggerId"
+                      params={{ triggerId: data?.data?.id.toString() }}
+                    >
+                      View Trigger
+                    </Link>
+                  </Button>
+                </section>
+              ))}
           </form>
         </Form>
       </main>
@@ -216,7 +226,7 @@ const TriggerEvent = ({
     form.getFieldState("triggerEvent").invalid;
 
   return (
-    <article className="space-y-4">
+    <article className="space-y-4 ">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold">What triggered you?</h1>
         <p className="text-secondary-foreground">
@@ -342,8 +352,8 @@ const EmotionalResponse = ({
     <article className="space-y-4">
       <h1 className="text-3xl font-bold">Emotional Response</h1>
       <p className="text-secondary-foreground">
-        What emotions came up? Try to name them specifically (e.g., anger,
-        shame, fear).
+        What emotions came up? Try to name them specifically (e.g. anger, shame,
+        fear).
       </p>
       <FormField
         control={form.control}
