@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useApi } from "./use-api";
 import { queryClient } from "@/routes/__root";
 import { toast } from "sonner";
+import { safeJsonParse } from "@/helpers/parse";
 
 interface TriggerApiResponse {
   id: number;
@@ -27,6 +28,15 @@ export interface TriggerEvent {
   updatedAt: string;
 }
 
+interface AddTriggerDto {
+  triggerEvent: string;
+  factualDescription: string;
+  emotions: string[];
+  meaning: string;
+  pastRelationship: string;
+  triggerName: string;
+}
+
 export const useTriggers = () => {
   const { get } = useApi();
   return useQuery<TriggerEvent[]>({
@@ -35,11 +45,12 @@ export const useTriggers = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
       const response = await get("/triggers");
+
       return response.data.map((item: TriggerApiResponse) => ({
         id: item.id,
         triggerEvent: item.trigger_event,
         factualDescription: item.factual_description,
-        emotions: JSON.parse(item.emotions),
+        emotions: safeJsonParse(item.emotions, []),
         meaning: item.meaning,
         pastRelationship: item.past_relationship,
         triggerName: item.trigger_name,
@@ -49,15 +60,6 @@ export const useTriggers = () => {
     },
   });
 };
-
-interface AddTriggerDto {
-  triggerEvent: string;
-  factualDescription: string;
-  emotions: string[];
-  meaning: string;
-  pastRelationship: string;
-  triggerName: string;
-}
 
 export const useAddTrigger = () => {
   const { post } = useApi();
@@ -116,7 +118,7 @@ export const useTriggerById = (triggerId: string) => {
         id: item.id,
         triggerEvent: item.trigger_event,
         factualDescription: item.factual_description,
-        emotions: JSON.parse(item.emotions),
+        emotions: safeJsonParse(item.emotions, []),
         meaning: item.meaning,
         pastRelationship: item.past_relationship,
         triggerName: item.trigger_name,

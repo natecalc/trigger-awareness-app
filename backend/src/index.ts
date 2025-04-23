@@ -2,53 +2,65 @@ import { Elysia, t } from "elysia";
 import { createDb } from "./db";
 import { faker } from "@faker-js/faker";
 import { cors } from "@elysiajs/cors";
+import dotenv from "dotenv";
 
-const app = new Elysia()
-  .use(
-    cors({
-      origin: ["http://localhost:5173"],
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      credentials: true,
-      allowedHeaders: ["Content-Type", "Authorization"],
+dotenv.config({ path: "../.env" });
+
+const serverSetup = async () => {
+  const db = await createDb();
+
+  const app = new Elysia()
+    .use(
+      cors({
+        origin: ["http://localhost:5173"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"],
+      })
+    )
+    .decorate("db", db)
+    .get("/ping", () => "pong")
+    .get("/", () => "Hello Elysia")
+    .post("/seed", async ({ db }) => {
+      console.log("Seeding database with test data");
+
+      const client = await db.connect();
+
+      try {
+        await client.query("BEGIN");
+
+        const insertTriggerQuery = `
+        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name) 
+        VALUES ($1, $2, $3, $4, $5, $6) 
+        RETURNING *`;
+
+        for (let i = 0; i < 10; i++) {
+          await client.query(insertTriggerQuery, [
+            faker.lorem.sentence(),
+            faker.lorem.paragraph(),
+            JSON.stringify([faker.lorem.words(3), faker.lorem.words(3)]),
+            faker.lorem.sentence(),
+            faker.lorem.sentence(),
+            faker.lorem.word(),
+          ]);
+        }
+
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+      } finally {
+        client.release();
+      }
     })
-  )
-  .decorate("db", createDb())
-  .get("/ping", () => "pong")
-  .get("/", () => "Hello Elysia")
-  .post("/seed", ({ db }) => {
-    console.log("Seeding database with test data");
+    .get(
+      "/triggers",
+      async ({ db, query }) => {
+        const limit = query.limit ?? 10;
+        console.log("Fetching triggers with limit", limit);
 
-    const insertTriggerQuery = db.prepare(/* sql */ `
-      INSERT INTO triggers ( trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name) VALUES (
-        $trigger_event,
-        $factual_description,
-        $emotions,
-        $meaning,
-        $past_relationship,
-        $trigger_name,
-      ) RETURNING *
-      `);
-    for (let i = 0; i < 10; i++) {
-      insertTriggerQuery.run({
-        $trigger_event: faker.lorem.sentence(),
-        $factual_description: faker.lorem.paragraph(),
-        $emotions: JSON.stringify([faker.lorem.words(3), faker.lorem.words(3)]),
-        $meaning: faker.lorem.sentence(),
-        $past_relationship: faker.lorem.sentence(),
-        $trigger_name: faker.lorem.word(),
-      });
-    }
-  })
-  .get(
-    "/triggers",
-    ({ db, query }) => {
-      const limit = query.limit ?? 10;
-      console.log("Fetching triggers with limit", limit);
-
-      // TODO: Update sql
-      const triggers = db
-        .query(
-          /* sql */ `
+        const result = await db.query(
+          `
         SELECT * FROM triggers
         WHERE trigger_event IS NOT NULL
         AND factual_description IS NOT NULL
@@ -57,120 +69,120 @@ const app = new Elysia()
         AND past_relationship IS NOT NULL
         AND trigger_name IS NOT NULL
         ORDER BY id DESC
-        LIMIT $limit
+        LIMIT $1
+      `,
+          [limit]
+        );
+
+        if (!result.rows || result.rows.length === 0) {
+          return {
+            status: 404,
+            message: "Triggers not found",
+          };
+        }
+
+        return result.rows;
+      },
+      {
+        query: t.Object({
+          limit: t.Optional(t.Numeric()),
+        }),
+      }
+    )
+    .post(
+      "/triggers",
+      async ({ db, body }) => {
+        console.log("Posting new trigger", body);
+
+        const insertTriggerQuery = `
+        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *`;
+
+        const result = await db.query(insertTriggerQuery, [
+          body.triggerEvent,
+          body.factualDescription,
+          JSON.stringify(body.emotions),
+          body.meaning,
+          body.pastRelationship,
+          body.triggerName,
+        ]);
+
+        if (!result.rows || result.rows.length === 0) {
+          return {
+            status: 404,
+            message: "Cannot create trigger",
+          };
+        }
+
+        return result.rows[0];
+      },
+      {
+        body: t.Object({
+          triggerEvent: t.String(),
+          factualDescription: t.String(),
+          emotions: t.Array(t.String()),
+          meaning: t.String(),
+          pastRelationship: t.String(),
+          triggerName: t.String(),
+        }),
+      }
+    )
+    .get("/triggers/:id", async ({ db, params }) => {
+      console.log("Fetching trigger with id", params.id);
+
+      const result = await db.query(
         `
-        )
-        .all({
-          $limit: limit,
-        });
+      SELECT * FROM triggers WHERE id = $1
+    `,
+        [params.id]
+      );
 
-      if (!triggers) {
+      if (!result.rows || result.rows.length === 0) {
         return {
           status: 404,
-          message: "Triggers not found",
+          message: "Trigger not found",
         };
       }
 
-      return triggers;
-    },
-    {
-      query: t.Object({
-        limit: t.Optional(t.Numeric()),
-      }),
-    }
-  )
-  .post(
-    "/triggers",
-    ({ db, body }) => {
-      console.log("Posting new trigger", body);
+      return result.rows[0];
+    })
+    .delete(
+      "/triggers/:id",
+      async ({ db, params }) => {
+        console.log("Deleting trigger with id", params.id);
 
-      const insertTriggerQuery = db.prepare(/* sql */ `
-        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name) VALUES (
-        $trigger_event,
-        $factual_description,
-        $emotions,
-        $meaning,
-        $past_relationship,
-        $trigger_name
-      ) RETURNING *
-        `);
+        const result = await db.query(
+          `
+        DELETE FROM triggers WHERE id = $1
+        RETURNING *
+      `,
+          [params.id]
+        );
 
-      const insertTrigger = insertTriggerQuery.get({
-        $trigger_event: body.triggerEvent,
-        $factual_description: body.factualDescription,
-        $emotions: JSON.stringify(body.emotions),
-        $meaning: body.meaning,
-        $past_relationship: body.pastRelationship,
-        $trigger_name: body.triggerName,
-      });
+        if (!result.rows || result.rows.length === 0) {
+          return {
+            status: 404,
+            message: "Cannot delete trigger",
+          };
+        }
 
-      if (!insertTrigger) {
-        return {
-          status: 404,
-          message: "Cannot create trigger",
-        };
+        return result.rows[0];
+      },
+      {
+        params: t.Object({
+          id: t.String(),
+        }),
       }
-      return insertTrigger;
-    },
-    {
-      body: t.Object({
-        triggerEvent: t.String(),
-        factualDescription: t.String(),
-        emotions: t.Array(t.String()),
-        meaning: t.String(),
-        pastRelationship: t.String(),
-        triggerName: t.String(),
-      }),
-    }
-  )
-  .get("/triggers/:id", ({ db, params }) => {
-    console.log("Fetching trigger with id", params.id);
-    const trigger = db
-      .query(
-        /* sql */ `
-        SELECT * FROM triggers WHERE id = $id
-        `
-      )
-      .get({
-        $id: params.id,
-      });
-    if (!trigger) {
-      return {
-        status: 404,
-        message: "Trigger not found",
-      };
-    }
-    return trigger;
-  })
-  .delete(
-    "/triggers/:id",
-    ({ db, params }) => {
-      console.log("Deleting trigger with id", params.id);
-      const deleteTriggerQuery = db.prepare(/* sql */ `
-        DELETE FROM triggers WHERE id = $id
-        `);
+    )
+    .listen(3000);
 
-      const deleteTrigger = deleteTriggerQuery.run({
-        $id: params.id,
-      });
+  console.log(
+    `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  );
+};
 
-      if (!deleteTrigger) {
-        return {
-          status: 404,
-          message: "Cannot delete trigger",
-        };
-      }
-      return deleteTrigger;
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-    }
-  )
-
-  .listen(3000);
-
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+serverSetup().catch((error) => {
+  console.error("Error starting server:", error);
+  process.exit(1);
+});
