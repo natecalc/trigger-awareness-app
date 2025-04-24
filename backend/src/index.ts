@@ -20,7 +20,7 @@ const serverSetup = async () => {
       cors({
         origin: [
           "http://localhost:5173",
-          "https://trigger-awareness-app.onrender.com",
+          "https://trigger-awareness-app-frontend.onrender.com",
         ],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
