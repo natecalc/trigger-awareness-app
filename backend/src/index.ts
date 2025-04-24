@@ -3,6 +3,7 @@ import { createDb } from "./db";
 import { faker } from "@faker-js/faker";
 import { cors } from "@elysiajs/cors";
 import dotenv from "dotenv";
+import swagger from "@elysiajs/swagger";
 
 dotenv.config({ path: "../.env" });
 
@@ -10,6 +11,7 @@ const serverSetup = async () => {
   const db = await createDb();
 
   const app = new Elysia()
+    .use(swagger())
     .use(
       cors({
         origin: ["http://localhost:5173"],

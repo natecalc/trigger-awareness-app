@@ -3,10 +3,12 @@
   "version": "1.0.50",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "bun run src/index.ts",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
+    "@elysiajs/swagger": "^1.2.2",
     "@faker-js/faker": "^9.7.0",
     "@types/pg": "^8.11.13",
     "dotenv": "^16.5.0",
