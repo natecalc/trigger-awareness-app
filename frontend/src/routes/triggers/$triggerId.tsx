@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEmotionColor } from "@/helpers/colors";
 import { formattedDate } from "@/helpers/date";
-import { TriggerEvent, useTriggerById } from "@/hooks/use-triggers";
+import { useTriggerById } from "@/hooks/use-triggers";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Edit, Save, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -20,13 +20,10 @@ function RouteComponent() {
   const { data: trigger } = useTriggerById(triggerId);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTrigger, setEditedTrigger] = useState<TriggerEvent>();
-  const [newEmotion, setNewEmotion] = useState("");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (trigger) {
-      setEditedTrigger(trigger);
+      // setEditedTrigger(trigger);
     }
   }, [trigger]);
 
@@ -43,7 +40,7 @@ function RouteComponent() {
 
   const handleEditToggle = () => {
     if (isEditing) {
-      setEditedTrigger({ ...trigger });
+      // setEditedTrigger({ ...trigger });
     }
     setIsEditing(!isEditing);
   };
@@ -89,7 +86,7 @@ function RouteComponent() {
               <Button
                 variant="destructiveOutline"
                 size="sm"
-                onClick={() => setShowDeleteDialog(true)}
+                // onClick={() => setShowDeleteDialog(true)}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
               </Button>
