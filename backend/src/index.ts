@@ -18,7 +18,10 @@ const serverSetup = async () => {
     .use(swagger())
     .use(
       cors({
-        origin: ["http://localhost:5173"],
+        origin: [
+          "http://localhost:5173",
+          "https://trigger-awareness-app.onrender.com",
+        ],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"],
