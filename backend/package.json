@@ -4,7 +4,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "bun run src/index.ts",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir=dist"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
@@ -19,5 +20,9 @@
   "devDependencies": {
     "bun-types": "latest"
   },
-  "module": "src/index.js"
+  "module": "src/index.js",
+  "type": "module",
+  "engines": {
+    "bun": "latest"
+  }
 }
