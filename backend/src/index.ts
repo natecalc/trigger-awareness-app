@@ -3,15 +3,15 @@ import { createDb } from "./db";
 import { faker } from "@faker-js/faker";
 import { cors } from "@elysiajs/cors";
 import dotenv from "dotenv";
-import swagger from "@elysiajs/swagger";
 
 dotenv.config({ path: "../.env" });
+
+const port = process.env.PORT || 3000;
 
 const serverSetup = async () => {
   const db = await createDb();
 
   const app = new Elysia()
-    .use(swagger())
     .use(
       cors({
         origin: ["http://localhost:5173"],
@@ -177,7 +177,7 @@ const serverSetup = async () => {
         }),
       }
     )
-    .listen(3000);
+    .listen(port);
 
   console.log(
     `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
