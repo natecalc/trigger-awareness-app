@@ -7,8 +7,6 @@ import swagger from "@elysiajs/swagger";
 
 dotenv.config({ path: "../.env" });
 
-process.env.NODE_ENV = process.env.NODE_ENV || "development";
-
 const port = process.env.PORT || 3000;
 
 const serverSetup = async () => {
@@ -68,29 +66,30 @@ const serverSetup = async () => {
         const limit = query.limit ?? 10;
         console.log("Fetching triggers with limit", limit);
 
-        const result = await db.query(
-          `
-        SELECT * FROM triggers
-        WHERE trigger_event IS NOT NULL
-        AND factual_description IS NOT NULL
-        AND emotions IS NOT NULL
-        AND meaning IS NOT NULL
-        AND past_relationship IS NOT NULL
-        AND trigger_name IS NOT NULL
-        ORDER BY id DESC
-        LIMIT $1
-      `,
-          [limit]
-        );
+        try {
+          const result = await db.query(
+            `
+          SELECT * FROM triggers
+          WHERE trigger_event IS NOT NULL
+          AND factual_description IS NOT NULL
+          AND emotions IS NOT NULL
+          AND meaning IS NOT NULL
+          AND past_relationship IS NOT NULL
+          AND trigger_name IS NOT NULL
+          ORDER BY id DESC
+          LIMIT $1
+        `,
+            [limit]
+          );
 
-        if (!result.rows || result.rows.length === 0) {
+          return result.rows;
+        } catch (error) {
+          console.error("Error fetching triggers:", error);
           return {
-            status: 404,
-            message: "Triggers not found",
+            status: 500,
+            message: "Internal Server Error",
           };
         }
-
-        return result.rows;
       },
       {
         query: t.Object({
@@ -108,23 +107,24 @@ const serverSetup = async () => {
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *`;
 
-        const result = await db.query(insertTriggerQuery, [
-          body.triggerEvent,
-          body.factualDescription,
-          JSON.stringify(body.emotions),
-          body.meaning,
-          body.pastRelationship,
-          body.triggerName,
-        ]);
+        try {
+          const result = await db.query(insertTriggerQuery, [
+            body.triggerEvent,
+            body.factualDescription,
+            JSON.stringify(body.emotions),
+            body.meaning,
+            body.pastRelationship,
+            body.triggerName,
+          ]);
 
-        if (!result.rows || result.rows.length === 0) {
+          return result.rows[0];
+        } catch (error) {
+          console.error("Error inserting trigger:", error);
           return {
-            status: 404,
-            message: "Cannot create trigger",
+            status: 500,
+            message: "Internal Server Error",
           };
         }
-
-        return result.rows[0];
       },
       {
         body: t.Object({
@@ -140,43 +140,45 @@ const serverSetup = async () => {
     .get("/triggers/:id", async ({ db, params }) => {
       console.log("Fetching trigger with id", params.id);
 
-      const result = await db.query(
-        `
-      SELECT * FROM triggers WHERE id = $1
-    `,
-        [params.id]
-      );
+      try {
+        const result = await db.query(
+          `
+        SELECT * FROM triggers WHERE id = $1
+      `,
+          [params.id]
+        );
 
-      if (!result.rows || result.rows.length === 0) {
+        return result.rows[0];
+      } catch (error) {
+        console.error("Error fetching trigger:", error);
         return {
-          status: 404,
-          message: "Trigger not found",
+          status: 500,
+          message: "Internal Server Error",
         };
       }
-
-      return result.rows[0];
     })
     .delete(
       "/triggers/:id",
       async ({ db, params }) => {
         console.log("Deleting trigger with id", params.id);
 
-        const result = await db.query(
-          `
-        DELETE FROM triggers WHERE id = $1
-        RETURNING *
-      `,
-          [params.id]
-        );
+        try {
+          const result = await db.query(
+            `
+          DELETE FROM triggers WHERE id = $1
+          RETURNING *
+        `,
+            [params.id]
+          );
 
-        if (!result.rows || result.rows.length === 0) {
+          return result.rows[0];
+        } catch (error) {
+          console.error("Error deleting trigger:", error);
           return {
-            status: 404,
-            message: "Cannot delete trigger",
+            status: 500,
+            message: "Internal Server Error",
           };
         }
-
-        return result.rows[0];
       },
       {
         params: t.Object({

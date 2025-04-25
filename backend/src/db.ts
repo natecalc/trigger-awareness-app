@@ -5,29 +5,20 @@ import path from "path";
 export const createDb = async () => {
   console.log("Creating PostgreSQL connection");
 
-  const isProduction = process.env.NODE_ENV === "production";
+  const connectionConfig = {
+    user: "***REMOVED***",
+    password: process.env.POSTGRES_PASSWORD,
+    host: "127.0.0.1",
+    port: parseInt(process.env.DOCKER_PORT || "5432"),
+    database: "trigger_map",
+    ssl: false,
+  };
 
-  let connectionConfig;
-
-  if (isProduction && process.env.RENDER_POSTGRES_URL) {
-    console.log("Using production database configuration");
-    const connectionString = process.env.RENDER_POSTGRES_URL;
-    connectionConfig = {
-      connectionString,
-      ssl: { rejectUnauthorized: false },
-    };
-  } else {
-    console.log("Using development database configuration");
-
-    connectionConfig = {
-      user: "***REMOVED***",
-      password: process.env.POSTGRES_PASSWORD,
-      host: "127.0.0.1",
-      port: 5432,
-      database: "trigger_map",
-      ssl: false,
-    };
-  }
+  console.log("Using database config:", {
+    host: connectionConfig.host,
+    port: connectionConfig.port,
+    database: connectionConfig.database,
+  });
 
   const client = new pg.Client(connectionConfig);
 
