@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { getEmotionColorClassName } from "@/helpers/colors";
 import { formattedDate } from "@/helpers/date";
 import {
-  UpdateTriggerDto,
+  TriggerEvent,
   useDeleteTrigger,
   useTriggerById,
   useUpdateTrigger,
@@ -30,7 +30,7 @@ function RouteComponent() {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTrigger, setEditedTrigger] = useState<UpdateTriggerDto>();
+  const [editedTrigger, setEditedTrigger] = useState<Partial<TriggerEvent>>({});
 
   if (!trigger) {
     return (
@@ -43,8 +43,26 @@ function RouteComponent() {
     );
   }
 
+  const handleSave = () => {
+    updateTrigger({
+      ...trigger,
+      ...editedTrigger,
+    });
+    setIsEditing(false);
+  };
+
   const handleDeleteTrigger = (triggerId: string) => {
     deleteTrigger(Number(triggerId));
+  };
+
+  const onChangeValues = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: keyof TriggerEvent
+  ) => {
+    setEditedTrigger({
+      ...editedTrigger,
+      [field]: e.target.value,
+    });
   };
 
   return (
@@ -74,7 +92,7 @@ function RouteComponent() {
               <Button
                 variant="default"
                 size="sm"
-                // onClick={handleSave}
+                onClick={handleSave}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
                 <Save className="h-4 w-4 mr-1" /> Save Changes
@@ -146,7 +164,7 @@ function RouteComponent() {
                 type="text"
                 defaultValue={trigger.triggerName}
                 className="text-lg font-semibold capitalize"
-                onChange={(e) => {}}
+                onChange={(e) => onChangeValues(e, "triggerName")}
               />
             ) : (
               <CardTitle className="text-lg font-semibold text-indigo-700 capitalize">
@@ -169,7 +187,7 @@ function RouteComponent() {
                 type="text"
                 defaultValue={trigger.triggerEvent}
                 className="text-lg font-semibold capitalize"
-                onChange={(e) => {}}
+                onChange={(e) => onChangeValues(e, "triggerEvent")}
               />
             ) : (
               <p className="text-muted-foreground">{trigger.triggerEvent}</p>
@@ -184,7 +202,7 @@ function RouteComponent() {
                 type="text"
                 defaultValue={trigger.factualDescription}
                 className="text-lg font-semibold capitalize"
-                onChange={(e) => {}}
+                onChange={(e) => onChangeValues(e, "factualDescription")}
               />
             ) : (
               <p className="text-muted-foreground">
@@ -217,7 +235,7 @@ function RouteComponent() {
                 type="text"
                 defaultValue={trigger.meaning}
                 className="text-lg font-semibold capitalize"
-                onChange={(e) => {}}
+                onChange={(e) => onChangeValues(e, "meaning")}
               />
             ) : (
               <p className="text-muted-foreground">{trigger.meaning}</p>
@@ -232,7 +250,7 @@ function RouteComponent() {
                 type="text"
                 defaultValue={trigger.pastRelationship}
                 className="text-lg font-semibold capitalize"
-                onChange={(e) => {}}
+                onChange={(e) => onChangeValues(e, "pastRelationship")}
               />
             ) : (
               <p className="text-muted-foreground">

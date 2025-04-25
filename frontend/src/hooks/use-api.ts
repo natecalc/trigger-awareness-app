@@ -1,10 +1,5 @@
 import axios from "axios";
-import { UpdateTriggerDto } from "./use-triggers";
-
-interface PostHeaders {
-  Authorization: string;
-  "content-type": "application/json";
-}
+import { TriggerEvent } from "./use-triggers";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -55,18 +50,17 @@ const del = async (authToken: string, uri: string) => {
 const patch = async (
   authToken: string,
   uri: string,
-  data?: string | UpdateTriggerDto
+  data?: Partial<TriggerEvent>
 ) => {
-  let headers = {
+  const headers = {
     Authorization: `Bearer ${authToken}`,
     "Content-Type": "application/json",
-  } as Partial<PostHeaders>;
-  const res = await axios.patch(API_URL + uri, {
-    method: "PATCH",
-    body: data || "",
-    headers,
-  });
-  return res;
+  };
+  try {
+    return await axios.patch(API_URL + uri, data, { headers });
+  } catch (error: any) {
+    throw error;
+  }
 };
 
 export const useApi = () => {

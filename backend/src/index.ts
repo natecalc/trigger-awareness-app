@@ -20,7 +20,7 @@ const serverSetup = async () => {
           "http://localhost:5173",
           "https://trigger-awareness-app-frontend.onrender.com",
         ],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"],
       })
@@ -193,7 +193,7 @@ const serverSetup = async () => {
     .patch(
       "/triggers/:id",
       async ({ db, params, body }) => {
-        console.log("Updating trigger with id", params.id);
+        console.log("Updating trigger with id", params.id, body);
         const updateTriggerQuery = `
       UPDATE triggers
       SET trigger_event = COALESCE($1, trigger_event),
@@ -216,12 +216,7 @@ const serverSetup = async () => {
             body.intensity,
             params.id,
           ]);
-          if (result.rowCount === 0) {
-            return {
-              status: 404,
-              message: "Trigger not found",
-            };
-          }
+
           return result.rows[0];
         } catch (error) {
           console.error("Error updating trigger:", error);

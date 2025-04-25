@@ -12,3 +12,8 @@ export const truncateString = (str: string, length: number) => {
   }
   return str.slice(0, length) + "...";
 };
+
+export const capitalizeFirstLetter = (str: string) => {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};

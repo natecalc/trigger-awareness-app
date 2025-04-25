@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useApi } from "./use-api";
 import { queryClient } from "@/routes/__root";
 import { toast } from "sonner";
+import { capitalizeFirstLetter } from "@/helpers/parse";
 
 interface TriggerApiResponse {
   id: number;
@@ -39,17 +40,6 @@ interface AddTriggerDto {
   intensity: number;
 }
 
-export interface UpdateTriggerDto {
-  triggerEvent?: string;
-  factualDescription?: string;
-  emotions?: string[];
-  meaning?: string;
-  pastRelationship?: string;
-  triggerName?: string;
-  intensity?: number;
-  id: number;
-}
-
 export const useTriggers = () => {
   const { get } = useApi();
   return useQuery<TriggerEvent[]>({
@@ -61,11 +51,11 @@ export const useTriggers = () => {
 
       return response.data.map((item: TriggerApiResponse) => ({
         id: item.id,
-        triggerEvent: item.trigger_event,
-        factualDescription: item.factual_description,
+        triggerEvent: capitalizeFirstLetter(item.trigger_event),
+        factualDescription: capitalizeFirstLetter(item.factual_description),
         emotions: item.emotions,
-        meaning: item.meaning,
-        pastRelationship: item.past_relationship,
+        meaning: capitalizeFirstLetter(item.meaning),
+        pastRelationship: capitalizeFirstLetter(item.past_relationship),
         triggerName: item.trigger_name,
         intensity: item.intensity,
         createdAt: item.created_at,
@@ -130,12 +120,12 @@ export const useTriggerById = (triggerId: string) => {
       const item = response.data;
       return {
         id: item.id,
-        triggerEvent: item.trigger_event,
-        factualDescription: item.factual_description,
+        triggerEvent: capitalizeFirstLetter(item.trigger_event),
+        factualDescription: capitalizeFirstLetter(item.factual_description),
         emotions: item.emotions,
-        meaning: item.meaning,
-        pastRelationship: item.past_relationship,
-        triggerName: item.trigger_name,
+        meaning: capitalizeFirstLetter(item.meaning),
+        pastRelationship: capitalizeFirstLetter(item.past_relationship),
+        triggerName: capitalizeFirstLetter(item.trigger_name),
         intensity: item.intensity,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
@@ -147,9 +137,8 @@ export const useTriggerById = (triggerId: string) => {
 export const useUpdateTrigger = () => {
   const { patch } = useApi();
   return useMutation({
-    mutationFn: async (values: UpdateTriggerDto) => {
-      console.log("Updating trigger with id", values);
-      return await patch(`/triggers/${values.id}`, JSON.stringify(values));
+    mutationFn: async (values: Partial<TriggerEvent>) => {
+      return await patch(`/triggers/${values.id}`, values);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers"] });
