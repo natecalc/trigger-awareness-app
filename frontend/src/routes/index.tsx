@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import EmotionSelector from "@/components/emotion-picker";
+import { Slider } from "@/components/ui/slider";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -45,6 +46,10 @@ function Index() {
     triggerName: z
       .string()
       .min(1, "Naming your trigger helps you recognize patterns"),
+    intensity: z
+      .number()
+      .min(1, "Please rate the intensity of your trigger")
+      .max(10, "Please rate the intensity of your trigger"),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,6 +61,7 @@ function Index() {
       meaning: "",
       pastRelationship: "",
       triggerName: "",
+      intensity: 1,
     },
     mode: "onChange",
   });
@@ -79,6 +85,7 @@ function Index() {
       meaning: values.meaning,
       pastRelationship: values.pastRelationship,
       triggerName: values.triggerName,
+      intensity: values.intensity,
     });
   };
 
@@ -154,20 +161,27 @@ function Index() {
               />
             )}
             {triggerFormStep == 4 && (
-              <MeaningAndInterpretation
+              <TriggerIntensity
                 nextStep={nextStep}
                 backStep={backStep}
                 form={form}
               />
             )}
             {triggerFormStep == 5 && (
-              <HistoricalConnection
+              <MeaningAndInterpretation
                 nextStep={nextStep}
                 backStep={backStep}
                 form={form}
               />
             )}
             {triggerFormStep == 6 && (
+              <HistoricalConnection
+                nextStep={nextStep}
+                backStep={backStep}
+                form={form}
+              />
+            )}
+            {triggerFormStep == 7 && (
               <NameThisPattern
                 nextStep={nextStep}
                 backStep={backStep}
@@ -175,7 +189,7 @@ function Index() {
                 handleAddTrigger={handleAddTrigger}
               />
             )}
-            {triggerFormStep == 7 &&
+            {triggerFormStep == 8 &&
               (isPending ? (
                 <section>
                   <Spinner size="medium" />
@@ -405,6 +419,80 @@ const EmotionalResponse = ({
           disabled={isDisabled}
           onClick={() => {
             form.setValue("emotions", form.getValues().emotions);
+            nextStep();
+          }}
+        >
+          Next
+        </Button>
+      </footer>
+    </article>
+  );
+};
+
+const TriggerIntensity = ({
+  nextStep,
+  backStep,
+  form,
+}: {
+  nextStep: () => void;
+  backStep: () => void;
+  form: UseFormReturn<any>;
+}) => {
+  const intensityValue = form.watch("intensity");
+  const isDisabled =
+    !intensityValue ||
+    intensityValue < 1 ||
+    intensityValue > 10 ||
+    form.getFieldState("intensity").invalid;
+  return (
+    <article className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Trigger Intensity</h1>
+        <h1 className="text-3xl font-bold">
+          {form.getValues("intensity") ? form.getValues("intensity") : 1}
+        </h1>
+      </div>
+      <p className="text-secondary-foreground">
+        On a scale of 1 to 10, how intense was this trigger for you?
+      </p>
+      <FormField
+        control={form.control}
+        name="intensity"
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <Slider
+                defaultValue={[1]}
+                min={1}
+                max={10}
+                step={1}
+                value={[intensityValue]}
+                onValueChange={(value) => {
+                  field.onChange(value[0]);
+                  form.trigger("intensity");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDisabled) {
+                    e.preventDefault();
+                    form.setValue("intensity", field.value);
+                    nextStep();
+                  }
+                }}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <footer className="flex justify-between">
+        <Button variant="secondary" onClick={backStep}>
+          Back
+        </Button>
+        <Button
+          disabled={isDisabled}
+          onClick={() => {
+            form.setValue("intensity", form.getValues().intensity);
             nextStep();
           }}
         >

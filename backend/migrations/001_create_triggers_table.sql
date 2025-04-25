@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS triggers (
     meaning TEXT NOT NULL,
     past_relationship TEXT,
     trigger_name TEXT NOT NULL,
+    intensity TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

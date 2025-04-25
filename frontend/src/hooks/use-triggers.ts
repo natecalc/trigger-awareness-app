@@ -11,6 +11,7 @@ interface TriggerApiResponse {
   meaning: string;
   past_relationship: string;
   trigger_name: string;
+  intensity: number;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +24,7 @@ export interface TriggerEvent {
   meaning: string;
   pastRelationship: string;
   triggerName: string;
+  intensity: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +36,7 @@ interface AddTriggerDto {
   meaning: string;
   pastRelationship: string;
   triggerName: string;
+  intensity: number;
 }
 
 export const useTriggers = () => {
@@ -53,6 +56,7 @@ export const useTriggers = () => {
         meaning: item.meaning,
         pastRelationship: item.past_relationship,
         triggerName: item.trigger_name,
+        intensity: item.intensity,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       }));
@@ -121,6 +125,7 @@ export const useTriggerById = (triggerId: string) => {
         meaning: item.meaning,
         pastRelationship: item.past_relationship,
         triggerName: item.trigger_name,
+        intensity: item.intensity,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       };

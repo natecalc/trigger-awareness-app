@@ -37,8 +37,8 @@ const serverSetup = async () => {
         await client.query("BEGIN");
 
         const insertTriggerQuery = `
-        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name) 
-        VALUES ($1, $2, $3, $4, $5, $6) 
+        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
         RETURNING *`;
 
         for (let i = 0; i < 10; i++) {
@@ -49,6 +49,7 @@ const serverSetup = async () => {
             faker.lorem.sentence(),
             faker.lorem.sentence(),
             faker.lorem.word(),
+            faker.number.int({ min: 1, max: 10 }),
           ]);
         }
 
@@ -76,6 +77,7 @@ const serverSetup = async () => {
           AND meaning IS NOT NULL
           AND past_relationship IS NOT NULL
           AND trigger_name IS NOT NULL
+          AND intensity IS NOT NULL
           ORDER BY id DESC
           LIMIT $1
         `,
@@ -103,8 +105,8 @@ const serverSetup = async () => {
         console.log("Posting new trigger", body);
 
         const insertTriggerQuery = `
-        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *`;
 
         try {
@@ -115,6 +117,7 @@ const serverSetup = async () => {
             body.meaning,
             body.pastRelationship,
             body.triggerName,
+            body.intensity,
           ]);
 
           return result.rows[0];
@@ -134,6 +137,7 @@ const serverSetup = async () => {
           meaning: t.String(),
           pastRelationship: t.String(),
           triggerName: t.String(),
+          intensity: t.Number(),
         }),
       }
     )
