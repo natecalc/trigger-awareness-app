@@ -39,6 +39,17 @@ interface AddTriggerDto {
   intensity: number;
 }
 
+export interface UpdateTriggerDto {
+  triggerEvent?: string;
+  factualDescription?: string;
+  emotions?: string[];
+  meaning?: string;
+  pastRelationship?: string;
+  triggerName?: string;
+  intensity?: number;
+  id: number;
+}
+
 export const useTriggers = () => {
   const { get } = useApi();
   return useQuery<TriggerEvent[]>({
@@ -129,6 +140,19 @@ export const useTriggerById = (triggerId: string) => {
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       };
+    },
+  });
+};
+
+export const useUpdateTrigger = () => {
+  const { patch } = useApi();
+  return useMutation({
+    mutationFn: async (values: UpdateTriggerDto) => {
+      console.log("Updating trigger with id", values);
+      return await patch(`/triggers/${values.id}`, JSON.stringify(values));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["triggers"] });
     },
   });
 };

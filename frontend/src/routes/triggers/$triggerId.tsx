@@ -2,12 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { getEmotionColorClassName } from "@/helpers/colors";
 import { formattedDate } from "@/helpers/date";
-import { useDeleteTrigger, useTriggerById } from "@/hooks/use-triggers";
+import {
+  UpdateTriggerDto,
+  useDeleteTrigger,
+  useTriggerById,
+  useUpdateTrigger,
+} from "@/hooks/use-triggers";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Edit, Save, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/triggers/$triggerId")({
   component: RouteComponent,
@@ -20,15 +26,11 @@ function RouteComponent() {
   });
   const { data: trigger } = useTriggerById(triggerId);
   const { mutate: deleteTrigger } = useDeleteTrigger();
+  const { mutate: updateTrigger } = useUpdateTrigger();
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    if (trigger) {
-      // setEditedTrigger(trigger);
-    }
-  }, [trigger]);
+  const [editedTrigger, setEditedTrigger] = useState<UpdateTriggerDto>();
 
   if (!trigger) {
     return (
@@ -40,17 +42,6 @@ function RouteComponent() {
       </div>
     );
   }
-
-  const handleEditToggle = () => {
-    if (isEditing) {
-      // setEditedTrigger({ ...trigger });
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-  };
 
   const handleDeleteTrigger = (triggerId: string) => {
     deleteTrigger(Number(triggerId));
@@ -73,13 +64,17 @@ function RouteComponent() {
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button variant="outline" size="sm" onClick={handleEditToggle}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(false)}
+              >
                 <X className="h-4 w-4 mr-1" /> Cancel
               </Button>
               <Button
                 variant="default"
                 size="sm"
-                onClick={handleSave}
+                // onClick={handleSave}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
                 <Save className="h-4 w-4 mr-1" /> Save Changes
@@ -87,7 +82,11 @@ function RouteComponent() {
             </>
           ) : (
             <>
-              <Button variant="outline" size="sm" onClick={handleEditToggle}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
                 <Edit className="h-4 w-4 mr-1" /> Edit Trigger
               </Button>
               <Dialog
@@ -119,15 +118,16 @@ function RouteComponent() {
                       >
                         Cancel
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          handleDeleteTrigger(triggerId);
-                          setShowDeleteDialog(false);
-                        }}
-                      >
-                        Delete
+                      <Button variant="destructive" size="sm" asChild>
+                        <Link
+                          to="/triggers"
+                          onClick={() => {
+                            handleDeleteTrigger(triggerId);
+                            setShowDeleteDialog(false);
+                          }}
+                        >
+                          Delete
+                        </Link>
                       </Button>
                     </div>
                   </div>
@@ -141,9 +141,18 @@ function RouteComponent() {
       <Card className=" shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-l-indigo-500">
         <CardHeader>
           <div className="flex justify-between items-start">
-            <CardTitle className="text-lg font-semibold text-indigo-700 capitalize">
-              {trigger.triggerName}
-            </CardTitle>
+            {isEditing ? (
+              <Input
+                type="text"
+                defaultValue={trigger.triggerName}
+                className="text-lg font-semibold capitalize"
+                onChange={(e) => {}}
+              />
+            ) : (
+              <CardTitle className="text-lg font-semibold text-indigo-700 capitalize">
+                {trigger.triggerName}
+              </CardTitle>
+            )}
             <div className="flex items-center text-sm text-gray-500">
               <Calendar className="h-4 w-4 mr-1" />
               {formattedDate(trigger.createdAt)}
@@ -155,15 +164,33 @@ function RouteComponent() {
             <h3>
               <strong>Trigger event</strong>
             </h3>
-            <p className="text-muted-foreground">{trigger.triggerEvent}</p>
+            {isEditing ? (
+              <Input
+                type="text"
+                defaultValue={trigger.triggerEvent}
+                className="text-lg font-semibold capitalize"
+                onChange={(e) => {}}
+              />
+            ) : (
+              <p className="text-muted-foreground">{trigger.triggerEvent}</p>
+            )}
           </div>
           <div className="space-y-2">
             <h3>
               <strong>Factual description</strong>
             </h3>
-            <p className="text-muted-foreground">
-              {trigger.factualDescription}
-            </p>
+            {isEditing ? (
+              <Input
+                type="text"
+                defaultValue={trigger.factualDescription}
+                className="text-lg font-semibold capitalize"
+                onChange={(e) => {}}
+              />
+            ) : (
+              <p className="text-muted-foreground">
+                {trigger.factualDescription}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <h3>
@@ -185,13 +212,33 @@ function RouteComponent() {
             <h3>
               <strong>Meaning</strong>
             </h3>
-            <p className="text-muted-foreground">{trigger.meaning}</p>
+            {isEditing ? (
+              <Input
+                type="text"
+                defaultValue={trigger.meaning}
+                className="text-lg font-semibold capitalize"
+                onChange={(e) => {}}
+              />
+            ) : (
+              <p className="text-muted-foreground">{trigger.meaning}</p>
+            )}
           </div>
           <div className="space-y-2">
             <h3>
               <strong>Past relationship</strong>
             </h3>
-            <p className="text-muted-foreground">{trigger.pastRelationship}</p>
+            {isEditing ? (
+              <Input
+                type="text"
+                defaultValue={trigger.pastRelationship}
+                className="text-lg font-semibold capitalize"
+                onChange={(e) => {}}
+              />
+            ) : (
+              <p className="text-muted-foreground">
+                {trigger.pastRelationship}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

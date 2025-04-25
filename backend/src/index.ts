@@ -190,6 +190,62 @@ const serverSetup = async () => {
         }),
       }
     )
+    .patch(
+      "/triggers/:id",
+      async ({ db, params, body }) => {
+        console.log("Updating trigger with id", params.id);
+        const updateTriggerQuery = `
+      UPDATE triggers
+      SET trigger_event = COALESCE($1, trigger_event),
+          factual_description = COALESCE($2, factual_description),
+          emotions = COALESCE($3, emotions),
+          meaning = COALESCE($4, meaning),
+          past_relationship = COALESCE($5, past_relationship),
+          trigger_name = COALESCE($6, trigger_name),
+          intensity = COALESCE($7, intensity)
+      WHERE id = $8
+      RETURNING *`;
+        try {
+          const result = await db.query(updateTriggerQuery, [
+            body.triggerEvent,
+            body.factualDescription,
+            JSON.stringify(body.emotions),
+            body.meaning,
+            body.pastRelationship,
+            body.triggerName,
+            body.intensity,
+            params.id,
+          ]);
+          if (result.rowCount === 0) {
+            return {
+              status: 404,
+              message: "Trigger not found",
+            };
+          }
+          return result.rows[0];
+        } catch (error) {
+          console.error("Error updating trigger:", error);
+          return {
+            status: 500,
+            message: "Internal Server Error",
+          };
+        }
+      },
+      {
+        params: t.Object({
+          id: t.String(),
+        }),
+        body: t.Object({
+          triggerEvent: t.Optional(t.String()),
+          factualDescription: t.Optional(t.String()),
+          emotions: t.Optional(t.Array(t.String())),
+          meaning: t.Optional(t.String()),
+          pastRelationship: t.Optional(t.String()),
+          triggerName: t.Optional(t.String()),
+          intensity: t.Optional(t.Number()),
+        }),
+      }
+    )
     .listen(port);
 
   console.log(

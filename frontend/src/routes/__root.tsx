@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { Outlet, createRootRoute, useLocation } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
@@ -13,8 +13,8 @@ export const Route = createRootRoute({
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex w-full items-center justify-center ">
-      <div className="p-0 md:p-8 w-full items-center justify-center flex pt-16 min-h-[calc(100vh-64px)]">
-        {children}
+      <div className="p-0 md:p-8 w-full items-center justify-center flex mt-24 md:mt-16">
+        <div className="pt-8">{children}</div>
       </div>
     </div>
   );
@@ -30,6 +30,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 };
 
 function RootComponent() {
+  const { pathname } = useLocation();
   return (
     <Providers>
       <main>
@@ -46,8 +47,24 @@ function RootComponent() {
             />
             <h1 className="text-xl font-bold">TriggerMap </h1>
             <nav className="p-2 flex gap-2 text-lg">
-              <a href="/">Home</a>
-              <a href="/triggers">Triggers</a>
+              <a
+                href="/"
+                className={`${
+                  pathname === "/" ? " font-semibold" : "text-gray-500"
+                }`}
+              >
+                Home
+              </a>
+              <a
+                href="/triggers"
+                className={`${
+                  pathname.startsWith("/triggers")
+                    ? " font-semibold"
+                    : "text-gray-500"
+                }`}
+              >
+                Triggers
+              </a>
             </nav>
           </div>
         </header>
