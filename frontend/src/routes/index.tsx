@@ -7,13 +7,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAddTrigger } from "@/hooks/use-triggers";
+import { TriggerEventDto, useAddTrigger } from "@/hooks/use-triggers";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronsRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import EmotionSelector from "@/components/emotion-picker";
@@ -22,6 +22,77 @@ import { Slider } from "@/components/ui/slider";
 export const Route = createFileRoute("/")({
   component: Index,
 });
+
+export const saveFormData = ({
+  step,
+  formData,
+}: {
+  step: string;
+  formData: Partial<TriggerEventDto>;
+}) => {
+  const savedData = JSON.parse(localStorage.getItem("multistepForm") || "{}");
+  savedData[step] = formData;
+  localStorage.setItem("multistepForm", JSON.stringify(savedData));
+};
+
+export const loadFormData = (step: string): Partial<TriggerEventDto> => {
+  const savedData = JSON.parse(localStorage.getItem("multistepForm") || "{}");
+  return savedData[step] || {};
+};
+
+export const clearFormData = () => {
+  localStorage.removeItem("multistepForm");
+};
+
+interface TaskProgressBarProps {
+  completedTasks: number;
+  totalTasks: number;
+  barText: string;
+}
+
+const TaskProgressBar: React.FC<TaskProgressBarProps> = ({
+  completedTasks,
+  totalTasks,
+  barText,
+}) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const newProgress =
+        totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+      setProgress(Number(newProgress.toFixed(2)));
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [completedTasks, totalTasks]);
+
+  return (
+    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative h-6">
+      <div
+        className="h-full bg-blue-500 transition-all duration-300"
+        style={{ width: `${progress}%` }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-sm font-medium text-white">
+          {barText}: {progress}%
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const ResetFormButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="text-sm text-red-600 hover:text-red-800 font-medium"
+      onClick={onClick}
+    >
+      Reset
+    </Button>
+  );
+};
 
 function Index() {
   const [triggerFormStep, setTriggerFormStep] = useState(0);
@@ -54,7 +125,7 @@ function Index() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: loadFormData("triggerForm") || {
       triggerEvent: "",
       factualDescription: "",
       emotions: [],
@@ -68,11 +139,19 @@ function Index() {
 
   const nextStep = () => {
     setTriggerFormStep(triggerFormStep + 1);
+    saveFormData({
+      step: "triggerForm",
+      formData: form.getValues(),
+    });
     window.scrollTo(0, 0);
   };
 
   const backStep = () => {
     setTriggerFormStep(triggerFormStep - 1);
+    saveFormData({
+      step: "triggerForm",
+      formData: form.getValues(),
+    });
     window.scrollTo(0, 0);
   };
 
@@ -87,28 +166,27 @@ function Index() {
       triggerName: values.triggerName,
       intensity: values.intensity,
     });
+    clearFormData();
   };
 
   return (
     <div className="p-2 space-y-8 flex justify-center">
-      {/* <NavigationTop className={"md:flex"}>
-        {onBoardStep === 1 && (
-          <NavButton
-            className={"text-primary"}
-            callback={() => router.replace("/logout")}
-          >
-            Log Out
-          </NavButton>
-        )}
-        {onBoardStep !== 1 && <NavBackButton callback={backStep} />}
-      </NavigationTop> */}
       <main className="container px-4 py-10 pb-16 p-2 space-y-8 max-w-3xl w-full">
-        <div className="pb-4">
-          {/* <TaskProgressBar
-            completedTasks={onBoardStep}
-            totalTasks={totalSteps}
+        <div
+          className={`pb-4 ${triggerFormStep < 1 ? "hidden" : "flex"} justify-between items-center gap-2`}
+        >
+          <TaskProgressBar
+            completedTasks={triggerFormStep}
+            totalTasks={8}
             barText="Progress"
-          /> */}
+          />
+          <ResetFormButton
+            onClick={() => {
+              form.reset();
+              setTriggerFormStep(0);
+              clearFormData();
+            }}
+          />
         </div>
 
         {triggerFormStep == 0 && (
@@ -466,7 +544,7 @@ const TriggerIntensity = ({
                 min={1}
                 max={10}
                 step={1}
-                value={[intensityValue]}
+                value={[intensityValue ?? 1]}
                 onValueChange={(value) => {
                   field.onChange(value[0]);
                   form.trigger("intensity");
@@ -694,8 +772,8 @@ const NameThisPattern = ({
           disabled={isDisabled}
           onClick={() => {
             form.setValue("triggerName", form.getValues().triggerName);
-            handleAddTrigger();
             nextStep();
+            handleAddTrigger(); // Last step which clear local storage too
           }}
         >
           Submit Trigger

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { TriggerEvent } from "@/hooks/use-triggers";
+import { TriggerEventDto } from "@/hooks/use-triggers";
 
-export const TriggerPanel = ({ trigger }: { trigger: TriggerEvent }) => {
+export const TriggerPanel = ({ trigger }: { trigger: TriggerEventDto }) => {
   return (
     <section
       className={`px-8 py-4 shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 items-center w-full md:w-3xl flex flex-row justify-between`}

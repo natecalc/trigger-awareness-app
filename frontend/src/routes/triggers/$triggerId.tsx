@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { getEmotionColorClassName } from "@/helpers/colors";
 import { formattedDate } from "@/helpers/date";
 import {
-  TriggerEvent,
+  TriggerEventDto,
   useDeleteTrigger,
   useTriggerById,
   useUpdateTrigger,
@@ -30,7 +30,9 @@ function RouteComponent() {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTrigger, setEditedTrigger] = useState<Partial<TriggerEvent>>({});
+  const [editedTrigger, setEditedTrigger] = useState<Partial<TriggerEventDto>>(
+    {}
+  );
 
   if (!trigger) {
     return (
@@ -57,7 +59,7 @@ function RouteComponent() {
 
   const onChangeValues = (
     e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof TriggerEvent
+    field: keyof TriggerEventDto
   ) => {
     setEditedTrigger({
       ...editedTrigger,

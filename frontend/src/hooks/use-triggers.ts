@@ -17,7 +17,7 @@ interface TriggerApiResponse {
   updated_at: string;
 }
 
-export interface TriggerEvent {
+export interface TriggerEventDto {
   id: number;
   triggerEvent: string;
   factualDescription: string;
@@ -42,7 +42,7 @@ interface AddTriggerDto {
 
 export const useTriggers = () => {
   const { get } = useApi();
-  return useQuery<TriggerEvent[]>({
+  return useQuery<TriggerEventDto[]>({
     queryKey: ["triggers"],
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -113,7 +113,7 @@ export const useDeleteTrigger = () => {
 
 export const useTriggerById = (triggerId: string) => {
   const { get } = useApi();
-  return useQuery<TriggerEvent>({
+  return useQuery<TriggerEventDto>({
     queryKey: ["triggers", triggerId],
     queryFn: async () => {
       const response = await get(`/triggers/${triggerId}`);
@@ -137,7 +137,7 @@ export const useTriggerById = (triggerId: string) => {
 export const useUpdateTrigger = () => {
   const { patch } = useApi();
   return useMutation({
-    mutationFn: async (values: Partial<TriggerEvent>) => {
+    mutationFn: async (values: Partial<TriggerEventDto>) => {
       return await patch(`/triggers/${values.id}`, values);
     },
     onSuccess: () => {

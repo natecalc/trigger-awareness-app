@@ -1,5 +1,5 @@
 import axios from "axios";
-import { TriggerEvent } from "./use-triggers";
+import { TriggerEventDto } from "./use-triggers";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -50,7 +50,7 @@ const del = async (authToken: string, uri: string) => {
 const patch = async (
   authToken: string,
   uri: string,
-  data?: Partial<TriggerEvent>
+  data?: Partial<TriggerEventDto>
 ) => {
   const headers = {
     Authorization: `Bearer ${authToken}`,
