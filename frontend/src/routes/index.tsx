@@ -14,9 +14,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useState } from "react";
-import { TagsInput } from "@/components/ui/tags-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import EmotionSelector from "@/components/emotion-picker";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [triggerFormStep, setTriggerFormStep] = useState(0);
 
-  const { mutate: addTrigger, data, isPending } = useAddTrigger();
+  const { mutate: addTrigger, data, isPending, error } = useAddTrigger();
 
   const formSchema = z.object({
     triggerEvent: z.string().min(1, "Please describe the triggering event"),
@@ -184,6 +184,14 @@ function Index() {
                     Your trigger is being submitted. Please wait a moment.
                   </p>
                 </section>
+              ) : error ? (
+                <section>
+                  <h1 className="text-3xl font-bold">Error</h1>
+                  <p className="text-secondary-foreground">
+                    There was an error submitting your trigger. Please try
+                    again.
+                  </p>
+                </section>
               ) : (
                 <section>
                   <h1 className="text-3xl font-bold">All Done! 🎉</h1>
@@ -196,6 +204,7 @@ function Index() {
                     <Link
                       to="/triggers/$triggerId"
                       params={{ triggerId: data?.data?.id.toString() }}
+                      disabled={!data?.data?.id}
                     >
                       View Trigger
                     </Link>
@@ -246,6 +255,13 @@ const TriggerEvent = ({
                 onChange={(e) => {
                   field.onChange(e);
                   form.trigger("triggerEvent");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDisabled) {
+                    e.preventDefault();
+                    form.setValue("triggerEvent", field.value);
+                    nextStep();
+                  }
                 }}
               />
             </FormControl>
@@ -305,6 +321,13 @@ const FactualDescription = ({
                   field.onChange(e);
                   form.trigger("factualDescription");
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDisabled) {
+                    e.preventDefault();
+                    form.setValue("factualDescription", field.value);
+                    nextStep();
+                  }
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -361,14 +384,12 @@ const EmotionalResponse = ({
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <TagsInput
+              <EmotionSelector
                 {...field}
-                value={field.value}
                 onChange={(value) => {
                   field.onChange(value);
                   form.trigger("emotions");
                 }}
-                placeholder="What emotions came up? Try to name them specifically (e.g., anger, shame, fear)"
               />
             </FormControl>
             <FormMessage />
@@ -428,6 +449,13 @@ const MeaningAndInterpretation = ({
                   field.onChange(e);
                   form.trigger("meaning");
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDisabled) {
+                    e.preventDefault();
+                    form.setValue("meaning", field.value);
+                    nextStep();
+                  }
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -485,6 +513,13 @@ const HistoricalConnection = ({
                 onChange={(e) => {
                   field.onChange(e);
                   form.trigger("pastRelationship");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDisabled) {
+                    e.preventDefault();
+                    form.setValue("pastRelationship", field.value);
+                    nextStep();
+                  }
                 }}
               />
             </FormControl>
@@ -548,6 +583,13 @@ const NameThisPattern = ({
                 onChange={(e) => {
                   field.onChange(e);
                   form.trigger("triggerName");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDisabled) {
+                    e.preventDefault();
+                    form.setValue("triggerName", field.value);
+                    nextStep();
+                  }
                 }}
               />
             </FormControl>

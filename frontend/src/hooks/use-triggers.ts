@@ -2,7 +2,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useApi } from "./use-api";
 import { queryClient } from "@/routes/__root";
 import { toast } from "sonner";
-import { safeJsonParse } from "@/helpers/parse";
 
 interface TriggerApiResponse {
   id: number;
@@ -50,7 +49,7 @@ export const useTriggers = () => {
         id: item.id,
         triggerEvent: item.trigger_event,
         factualDescription: item.factual_description,
-        emotions: safeJsonParse(item.emotions, []),
+        emotions: item.emotions,
         meaning: item.meaning,
         pastRelationship: item.past_relationship,
         triggerName: item.trigger_name,
@@ -118,7 +117,7 @@ export const useTriggerById = (triggerId: string) => {
         id: item.id,
         triggerEvent: item.trigger_event,
         factualDescription: item.factual_description,
-        emotions: safeJsonParse(item.emotions, []),
+        emotions: item.emotions,
         meaning: item.meaning,
         pastRelationship: item.past_relationship,
         triggerName: item.trigger_name,

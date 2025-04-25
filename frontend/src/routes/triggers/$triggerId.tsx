@@ -1,9 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getEmotionColor } from "@/helpers/colors";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { getEmotionColorClassName } from "@/helpers/colors";
 import { formattedDate } from "@/helpers/date";
-import { useTriggerById } from "@/hooks/use-triggers";
+import { useDeleteTrigger, useTriggerById } from "@/hooks/use-triggers";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, Edit, Save, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,7 +19,9 @@ function RouteComponent() {
     select: (params) => params.triggerId,
   });
   const { data: trigger } = useTriggerById(triggerId);
+  const { mutate: deleteTrigger } = useDeleteTrigger();
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -47,6 +50,10 @@ function RouteComponent() {
 
   const handleSave = () => {
     setIsEditing(false);
+  };
+
+  const handleDeleteTrigger = (triggerId: string) => {
+    deleteTrigger(Number(triggerId));
   };
 
   return (
@@ -83,13 +90,49 @@ function RouteComponent() {
               <Button variant="outline" size="sm" onClick={handleEditToggle}>
                 <Edit className="h-4 w-4 mr-1" /> Edit Trigger
               </Button>
-              <Button
-                variant="destructiveOutline"
-                size="sm"
-                // onClick={() => setShowDeleteDialog(true)}
+              <Dialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
               >
-                <Trash2 className="h-4 w-4 mr-1" /> Delete
-              </Button>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="destructiveOutline"
+                    size="sm"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <div className="flex flex-col items-center">
+                    <h2 className="text-lg font-semibold text-red-600">
+                      Are you sure you want to delete this trigger?
+                    </h2>
+                    <p className="text-gray-500">
+                      This action cannot be undone.
+                    </p>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowDeleteDialog(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          handleDeleteTrigger(triggerId);
+                          setShowDeleteDialog(false);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </>
           )}
         </div>
@@ -131,7 +174,7 @@ function RouteComponent() {
                 <Badge
                   key={index}
                   variant="outline"
-                  className={`${getEmotionColor(emotion)} font-normal py-0.5 capitalize`}
+                  className={`${getEmotionColorClassName(emotion)} font-normal py-0.5 capitalize`}
                 >
                   {emotion}
                 </Badge>

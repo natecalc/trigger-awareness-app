@@ -1,6 +1,7 @@
 import { TriggerPanel } from "@/components/trigger-panel";
 import { Button } from "@/components/ui/button";
-import { useDeleteTrigger, useTriggers } from "@/hooks/use-triggers";
+import { Spinner } from "@/components/ui/spinner";
+import { useTriggers } from "@/hooks/use-triggers";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/triggers/")({
@@ -13,13 +14,12 @@ function RouteComponent() {
     isError: triggersIsError,
     data: triggers,
   } = useTriggers();
-  const { mutate: deleteTrigger } = useDeleteTrigger();
 
   if (triggersIsLoading) {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
+      <div className="flex items-center justify-center w-full">
         <div className="flex flex-col items-center">
-          <h1 className="text-2xl font-bold">Loading...</h1>
+          <Spinner className="h-8 w-8 animate-spin text-indigo-600" />
           <p className="text-gray-500">
             Please wait while we fetch your triggers.
           </p>
@@ -29,7 +29,7 @@ function RouteComponent() {
   }
   if (triggersIsError) {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
+      <div className="flex items-center justify-center w-full">
         <div className="flex flex-col items-center">
           <h1 className="text-2xl font-bold">Error</h1>
           <p className="text-gray-500">
@@ -41,7 +41,7 @@ function RouteComponent() {
   }
   if (!triggers || triggers.length === 0) {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
+      <div className="flex items-center justify-center w-full">
         <div className="flex flex-col items-center">
           <h1 className="text-2xl font-bold">No Triggers Found</h1>
           <p className="text-gray-500">
@@ -57,17 +57,18 @@ function RouteComponent() {
 
   return (
     <section className="flex flex-col w-full p-4 space-y-4 md:w-3xl">
-      <h2 className="text-2xl font-bold mb-4">Your Trigger Repository</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Your Trigger Repository</h2>
+        <Button variant="outline" size="sm" className="text-sm" asChild>
+          <Link to="/">Add Trigger</Link>
+        </Button>
+      </div>
       <p className="text-gray-500 mb-4">
         View summary information and details about your triggers. View details
         for full breakdown of each.
       </p>
       {triggers.map((trigger) => (
-        <TriggerPanel
-          key={trigger.id}
-          trigger={trigger}
-          onDelete={deleteTrigger}
-        />
+        <TriggerPanel key={trigger.id} trigger={trigger} />
       ))}
     </section>
   );
