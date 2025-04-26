@@ -4,6 +4,7 @@ import { faker } from "@faker-js/faker";
 import { cors } from "@elysiajs/cors";
 import dotenv from "dotenv";
 import swagger from "@elysiajs/swagger";
+import jwt from "@elysiajs/jwt";
 
 dotenv.config({ path: "../.env" });
 
@@ -25,11 +26,149 @@ const serverSetup = async () => {
         allowedHeaders: ["Content-Type", "Authorization"],
       })
     )
+    .use(
+      jwt({
+        name: "jwt",
+        secret:
+          process.env.JWT_SECRET || "your-secret-key-change-in-production",
+      })
+    )
+    .derive(({ headers, jwt, set }) => {
+      return {
+        authenticate: async () => {
+          const authHeader = headers.authorization;
+          if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            set.status = 401;
+            return null;
+          }
+
+          const token = authHeader.split(" ")[1];
+          const payload = await jwt.verify(token);
+
+          if (!payload) {
+            set.status = 401;
+            return null;
+          }
+
+          return payload;
+        },
+      };
+    })
     .decorate("db", db)
     .get("/ping", () => "pong")
     .get("/", () => "Hello Elysia")
-    .post("/seed", async ({ db }) => {
-      console.log("Seeding database with test data");
+    .post(
+      "/auth/signup",
+      async ({ db, body, set }) => {
+        try {
+          const existingUser = await db.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [body.email]
+          );
+
+          if (existingUser.rows.length > 0) {
+            set.status = 400;
+            return { error: "User already exists" };
+          }
+
+          const passwordHash = await Bun.password.hash(body.password);
+
+          const result = await db.query(
+            "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email",
+            [body.username, body.email, passwordHash]
+          );
+
+          return result.rows[0];
+        } catch (error) {
+          console.error("Error creating user:", error);
+          set.status = 500;
+          return { error: "Server error" };
+        }
+      },
+      {
+        body: t.Object({
+          username: t.String(),
+          email: t.String(),
+          password: t.String(),
+        }),
+      }
+    )
+    .post(
+      "/auth/login",
+      async ({ db, body, jwt, set }) => {
+        try {
+          const result = await db.query(
+            `SELECT id, username, email, password_hash FROM users WHERE email = $1`,
+            [body.email]
+          );
+
+          if (result.rows.length === 0) {
+            set.status = 401;
+            return { error: "Invalid credentials" };
+          }
+
+          const user = result.rows[0];
+
+          const isMatch = await Bun.password.verify(
+            body.password,
+            user.password_hash
+          );
+          if (!isMatch) {
+            set.status = 401;
+            return { error: "Invalid credentials" };
+          }
+
+          const token = await jwt.sign({
+            id: user.id,
+            email: user.email,
+            username: user.username,
+          });
+
+          return {
+            token,
+            user: {
+              id: user.id,
+              email: user.email,
+              username: user.username,
+            },
+          };
+        } catch (error) {
+          console.error("Error during login:", error);
+          set.status = 500;
+          return { error: "Server error" };
+        }
+      },
+      {
+        body: t.Object({
+          email: t.String(),
+          password: t.String(),
+        }),
+      }
+    )
+    .get("/users/me", async ({ authenticate, db }) => {
+      const user = await authenticate();
+      if (!user) return { error: "Unauthorized" };
+
+      try {
+        const result = await db.query(
+          "SELECT id, username, email FROM users WHERE id = $1",
+          [user.id]
+        );
+
+        return result.rows[0];
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        return {
+          status: 500,
+          message: "Internal Server Error",
+        };
+      }
+    })
+    .post("/seed", async ({ db, authenticate }) => {
+      const user = await authenticate();
+      if (!user) return { error: "Unauthorized" };
+
+      console.log("Seeding database with test data for user", user.id);
 
       const client = await db.connect();
 
@@ -37,12 +176,13 @@ const serverSetup = async () => {
         await client.query("BEGIN");
 
         const insertTriggerQuery = `
-        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        INSERT INTO triggers (user_id, trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
         RETURNING *`;
 
         for (let i = 0; i < 10; i++) {
           await client.query(insertTriggerQuery, [
+            user.id,
             faker.lorem.sentence(),
             faker.lorem.paragraph(),
             JSON.stringify([faker.lorem.words(3), faker.lorem.words(3)]),
@@ -54,6 +194,8 @@ const serverSetup = async () => {
         }
 
         await client.query("COMMIT");
+
+        return { message: "Database seeded successfully" };
       } catch (e) {
         await client.query("ROLLBACK");
         throw e;
@@ -63,25 +205,29 @@ const serverSetup = async () => {
     })
     .get(
       "/triggers",
-      async ({ db, query }) => {
+      async ({ db, query, authenticate }) => {
+        const user = await authenticate();
+        if (!user) return { error: "Unauthorized" };
+
         const limit = query.limit ?? 10;
         console.log("Fetching triggers with limit", limit);
 
         try {
           const result = await db.query(
             `
-          SELECT * FROM triggers
-          WHERE trigger_event IS NOT NULL
-          AND factual_description IS NOT NULL
-          AND emotions IS NOT NULL
-          AND meaning IS NOT NULL
-          AND past_relationship IS NOT NULL
-          AND trigger_name IS NOT NULL
-          AND intensity IS NOT NULL
-          ORDER BY id DESC
-          LIMIT $1
-        `,
-            [limit]
+            SELECT * FROM triggers
+            WHERE user_id = $1
+            AND trigger_event IS NOT NULL
+            AND factual_description IS NOT NULL
+            AND emotions IS NOT NULL
+            AND meaning IS NOT NULL
+            AND past_relationship IS NOT NULL
+            AND trigger_name IS NOT NULL
+            AND intensity IS NOT NULL
+            ORDER BY id DESC
+            LIMIT $2
+          `,
+            [user.id, limit]
           );
 
           return result.rows;
@@ -101,16 +247,20 @@ const serverSetup = async () => {
     )
     .post(
       "/triggers",
-      async ({ db, body }) => {
+      async ({ db, body, authenticate }) => {
+        const user = await authenticate();
+        if (!user) return { error: "Unauthorized" };
+
         console.log("Posting new trigger", body);
 
         const insertTriggerQuery = `
-        INSERT INTO triggers (trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO triggers (user_id, trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *`;
 
         try {
           const result = await db.query(insertTriggerQuery, [
+            user.id,
             body.triggerEvent,
             body.factualDescription,
             JSON.stringify(body.emotions),
@@ -141,15 +291,18 @@ const serverSetup = async () => {
         }),
       }
     )
-    .get("/triggers/:id", async ({ db, params }) => {
+    .get("/triggers/:id", async ({ db, params, authenticate }) => {
+      const user = await authenticate();
+      if (!user) return { error: "Unauthorized" };
+
       console.log("Fetching trigger with id", params.id);
 
       try {
         const result = await db.query(
           `
-        SELECT * FROM triggers WHERE id = $1
-      `,
-          [params.id]
+          SELECT * FROM triggers WHERE id = $1 AND user_id = $2
+        `,
+          [params.id, user.id]
         );
 
         return result.rows[0];
@@ -163,16 +316,19 @@ const serverSetup = async () => {
     })
     .delete(
       "/triggers/:id",
-      async ({ db, params }) => {
+      async ({ db, params, authenticate }) => {
+        const user = await authenticate();
+        if (!user) return { error: "Unauthorized" };
+
         console.log("Deleting trigger with id", params.id);
 
         try {
           const result = await db.query(
             `
-          DELETE FROM triggers WHERE id = $1
-          RETURNING *
-        `,
-            [params.id]
+            DELETE FROM triggers WHERE id = $1 AND user_id = $2
+            RETURNING *
+          `,
+            [params.id, user.id]
           );
 
           return result.rows[0];
@@ -192,29 +348,33 @@ const serverSetup = async () => {
     )
     .patch(
       "/triggers/:id",
-      async ({ db, params, body }) => {
+      async ({ db, params, body, authenticate }) => {
+        const user = await authenticate();
+        if (!user) return { error: "Unauthorized" };
+
         console.log("Updating trigger with id", params.id, body);
         const updateTriggerQuery = `
-      UPDATE triggers
-      SET trigger_event = COALESCE($1, trigger_event),
-          factual_description = COALESCE($2, factual_description),
-          emotions = COALESCE($3, emotions),
-          meaning = COALESCE($4, meaning),
-          past_relationship = COALESCE($5, past_relationship),
-          trigger_name = COALESCE($6, trigger_name),
-          intensity = COALESCE($7, intensity)
-      WHERE id = $8
-      RETURNING *`;
+        UPDATE triggers
+        SET trigger_event = COALESCE($1, trigger_event),
+            factual_description = COALESCE($2, factual_description),
+            emotions = COALESCE($3, emotions),
+            meaning = COALESCE($4, meaning),
+            past_relationship = COALESCE($5, past_relationship),
+            trigger_name = COALESCE($6, trigger_name),
+            intensity = COALESCE($7, intensity)
+        WHERE id = $8 AND user_id = $9
+        RETURNING *`;
         try {
           const result = await db.query(updateTriggerQuery, [
             body.triggerEvent,
             body.factualDescription,
-            JSON.stringify(body.emotions),
+            body.emotions ? JSON.stringify(body.emotions) : null,
             body.meaning,
             body.pastRelationship,
             body.triggerName,
             body.intensity,
             params.id,
+            user.id,
           ]);
 
           return result.rows[0];
@@ -241,45 +401,6 @@ const serverSetup = async () => {
         }),
       }
     )
-    // .get("/user/:id", async ({ db, params }) => {
-    //   console.log("Fetching user with id", params.id);
-    //   try {
-    //     const result = await db.query(
-    //       `
-    //       SELECT * FROM users WHERE id = $1
-    //     `,
-    //       [params.id]
-    //     );
-    //     return result.rows[0];
-    //   } catch (error) {
-    //     console.error("Error fetching user:", error);
-    //     return {
-    //       status: 500,
-    //       message: "Internal Server Error",
-    //     };
-    //   }
-    // })
-    // .post("/user", async ({ db, body }) => {
-    //   console.log("Posting new user", body);
-    //   const insertUserQuery = `
-    //     INSERT INTO users (username, email, password)
-    //     VALUES ($1, $2, $3)
-    //     RETURNING *`;
-    //   try {
-    //     const result = await db.query(insertUserQuery, [
-    //       body.username,
-    //       body.email,
-    //       body.password,
-    //     ]);
-    //     return result.rows[0];
-    //   } catch (error) {
-    //     console.error("Error inserting user:", error);
-    //     return {
-    //       status: 500,
-    //       message: "Internal Server Error",
-    //     };
-    //   }
-    // })
     .listen(port);
 
   console.log(

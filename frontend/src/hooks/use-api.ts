@@ -63,8 +63,8 @@ const patch = async (
   }
 };
 
-export const useApi = () => {
-  const token = ""; // TODO: Apply when needed
+export const useApi = (authToken?: string) => {
+  const token = authToken || "";
   return {
     get: async (url: string) => get(token, url),
     post: async (url: string, data?: any | FormData) => post(token, url, data),
