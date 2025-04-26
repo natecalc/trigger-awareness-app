@@ -7,7 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { TriggerEventDto, useAddTrigger } from "@/hooks/use-triggers";
+import { useAddTrigger } from "@/hooks/use-triggers";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronsRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,31 +18,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import EmotionSelector from "@/components/emotion-picker";
 import { Slider } from "@/components/ui/slider";
+import { clearFormData, loadFormData, saveFormData } from "@/helpers/storage";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
-
-export const saveFormData = ({
-  step,
-  formData,
-}: {
-  step: string;
-  formData: Partial<TriggerEventDto>;
-}) => {
-  const savedData = JSON.parse(localStorage.getItem("multistepForm") || "{}");
-  savedData[step] = formData;
-  localStorage.setItem("multistepForm", JSON.stringify(savedData));
-};
-
-export const loadFormData = (step: string): Partial<TriggerEventDto> => {
-  const savedData = JSON.parse(localStorage.getItem("multistepForm") || "{}");
-  return savedData[step] || {};
-};
-
-export const clearFormData = () => {
-  localStorage.removeItem("multistepForm");
-};
 
 interface TaskProgressBarProps {
   completedTasks: number;
@@ -173,7 +153,7 @@ function Index() {
     <div className="p-2 space-y-8 flex justify-center">
       <main className="container px-4 py-10 pb-16 p-2 space-y-8 max-w-3xl w-full">
         <div
-          className={`pb-4 ${triggerFormStep < 1 ? "hidden" : "flex"} justify-between items-center gap-2`}
+          className={`pb-4 ${triggerFormStep < 1 || triggerFormStep > 7 ? "hidden" : "flex"} justify-between items-center gap-2`}
         >
           <TaskProgressBar
             completedTasks={triggerFormStep}
@@ -755,6 +735,7 @@ const NameThisPattern = ({
                     e.preventDefault();
                     form.setValue("triggerName", field.value);
                     nextStep();
+                    handleAddTrigger();
                   }
                 }}
               />

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { getEmotionColorClassName } from "@/helpers/colors";
 import { formattedDate } from "@/helpers/date";
 import {
@@ -160,35 +161,38 @@ function RouteComponent() {
 
       <Card className=" shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-l-indigo-500">
         <CardHeader>
-          <div className="flex justify-between items-start">
-            {isEditing ? (
-              <Input
-                type="text"
-                defaultValue={trigger.triggerName}
-                className="text-lg font-semibold capitalize"
-                onChange={(e) => onChangeValues(e, "triggerName")}
-              />
-            ) : (
-              <CardTitle className="text-lg font-semibold text-indigo-700 capitalize">
-                {trigger.triggerName}
-              </CardTitle>
-            )}
-            <div className="flex items-center text-sm text-gray-500">
+          <div className="flex justify-between items-center gap-4">
+            <h3>
+              <strong>Name</strong>
+            </h3>
+            <div className="flex items-center text-sm text-gray-500  text-nowrap">
               <Calendar className="h-4 w-4 mr-1" />
               {formattedDate(trigger.createdAt)}
             </div>
           </div>
+          {isEditing ? (
+            <Input
+              type="text"
+              defaultValue={trigger.triggerName}
+              className="text-lg font-semibold "
+              onChange={(e) => onChangeValues(e, "triggerName")}
+            />
+          ) : (
+            <CardTitle className="text-lg font-semibold text-indigo-700 ">
+              {trigger.triggerName}
+            </CardTitle>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h3>
-              <strong>Trigger event</strong>
+              <strong>Event</strong>
             </h3>
             {isEditing ? (
               <Input
                 type="text"
                 defaultValue={trigger.triggerEvent}
-                className="text-lg font-semibold capitalize"
+                className="text-lg font-semibold "
                 onChange={(e) => onChangeValues(e, "triggerEvent")}
               />
             ) : (
@@ -203,7 +207,7 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.factualDescription}
-                className="text-lg font-semibold capitalize"
+                className="text-lg font-semibold "
                 onChange={(e) => onChangeValues(e, "factualDescription")}
               />
             ) : (
@@ -221,12 +225,39 @@ function RouteComponent() {
                 <Badge
                   key={index}
                   variant="outline"
-                  className={`${getEmotionColorClassName(emotion)} font-normal py-0.5 capitalize`}
+                  className={`${getEmotionColorClassName(emotion)} font-normal py-0.5 `}
                 >
                   {emotion}
                 </Badge>
               ))}
             </ul>
+          </div>
+          <div className="space-y-2">
+            <h3 className="flex items-center gap-2 w-full justify-between">
+              <strong>Emotional intensity</strong>
+              {isEditing && (
+                <h3>
+                  <strong>{editedTrigger.intensity}</strong>
+                </h3>
+              )}
+            </h3>
+            {isEditing ? (
+              <Slider
+                defaultValue={[1]}
+                min={1}
+                max={10}
+                step={1}
+                value={[editedTrigger.intensity || 1]}
+                onValueChange={(value) => {
+                  setEditedTrigger({
+                    ...editedTrigger,
+                    intensity: value[0],
+                  });
+                }}
+              />
+            ) : (
+              <p className="text-muted-foreground">{trigger.intensity}</p>
+            )}
           </div>
           <div className="space-y-2">
             <h3>
@@ -236,7 +267,7 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.meaning}
-                className="text-lg font-semibold capitalize"
+                className="text-lg font-semibold "
                 onChange={(e) => onChangeValues(e, "meaning")}
               />
             ) : (
@@ -251,7 +282,7 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.pastRelationship}
-                className="text-lg font-semibold capitalize"
+                className="text-lg font-semibold "
                 onChange={(e) => onChangeValues(e, "pastRelationship")}
               />
             ) : (
