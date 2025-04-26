@@ -10,9 +10,11 @@
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "@faker-js/faker": "^9.7.0",
+    "@lucia-auth/adapter-***REMOVED***ql": "^3.1.2",
     "@types/pg": "^8.11.13",
     "dotenv": "^16.5.0",
     "elysia": "latest",
+    "lucia": "^3.2.2",
     "pg": "^8.15.5",
     "***REMOVED***-migrations": "^5.3.0"
   },

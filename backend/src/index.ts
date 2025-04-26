@@ -241,6 +241,45 @@ const serverSetup = async () => {
         }),
       }
     )
+    // .get("/user/:id", async ({ db, params }) => {
+    //   console.log("Fetching user with id", params.id);
+    //   try {
+    //     const result = await db.query(
+    //       `
+    //       SELECT * FROM users WHERE id = $1
+    //     `,
+    //       [params.id]
+    //     );
+    //     return result.rows[0];
+    //   } catch (error) {
+    //     console.error("Error fetching user:", error);
+    //     return {
+    //       status: 500,
+    //       message: "Internal Server Error",
+    //     };
+    //   }
+    // })
+    // .post("/user", async ({ db, body }) => {
+    //   console.log("Posting new user", body);
+    //   const insertUserQuery = `
+    //     INSERT INTO users (username, email, password)
+    //     VALUES ($1, $2, $3)
+    //     RETURNING *`;
+    //   try {
+    //     const result = await db.query(insertUserQuery, [
+    //       body.username,
+    //       body.email,
+    //       body.password,
+    //     ]);
+    //     return result.rows[0];
+    //   } catch (error) {
+    //     console.error("Error inserting user:", error);
+    //     return {
+    //       status: 500,
+    //       message: "Internal Server Error",
+    //     };
+    //   }
+    // })
     .listen(port);
 
   console.log(
