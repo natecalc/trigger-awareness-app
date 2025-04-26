@@ -11,11 +11,18 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
 import { Route as TriggersIndexImport } from './routes/triggers/index'
 import { Route as TriggersTriggerIdImport } from './routes/triggers/$triggerId'
 
 // Create/Update Routes
+
+const DashboardRoute = DashboardImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -46,6 +53,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardImport
+      parentRoute: typeof rootRoute
+    }
     '/triggers/$triggerId': {
       id: '/triggers/$triggerId'
       path: '/triggers/$triggerId'
@@ -67,12 +81,14 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/triggers/$triggerId': typeof TriggersTriggerIdRoute
   '/triggers': typeof TriggersIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/triggers/$triggerId': typeof TriggersTriggerIdRoute
   '/triggers': typeof TriggersIndexRoute
 }
@@ -80,27 +96,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/triggers/$triggerId': typeof TriggersTriggerIdRoute
   '/triggers/': typeof TriggersIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/triggers/$triggerId' | '/triggers'
+  fullPaths: '/' | '/dashboard' | '/triggers/$triggerId' | '/triggers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/triggers/$triggerId' | '/triggers'
-  id: '__root__' | '/' | '/triggers/$triggerId' | '/triggers/'
+  to: '/' | '/dashboard' | '/triggers/$triggerId' | '/triggers'
+  id: '__root__' | '/' | '/dashboard' | '/triggers/$triggerId' | '/triggers/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   TriggersTriggerIdRoute: typeof TriggersTriggerIdRoute
   TriggersIndexRoute: typeof TriggersIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   TriggersTriggerIdRoute: TriggersTriggerIdRoute,
   TriggersIndexRoute: TriggersIndexRoute,
 }
@@ -116,12 +135,16 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/dashboard",
         "/triggers/$triggerId",
         "/triggers/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/dashboard": {
+      "filePath": "dashboard.tsx"
     },
     "/triggers/$triggerId": {
       "filePath": "triggers/$triggerId.tsx"
