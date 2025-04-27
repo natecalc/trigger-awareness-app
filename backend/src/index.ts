@@ -59,7 +59,7 @@ const serverSetup = async () => {
     .get("/", () => "Hello Elysia")
     .post(
       "/auth/signup",
-      async ({ db, body, set }) => {
+      async ({ db, body, jwt, set }) => {
         try {
           const existingUser = await db.query(
             `SELECT * FROM users WHERE email = $1`,
@@ -78,7 +78,22 @@ const serverSetup = async () => {
             [body.username, body.email, passwordHash]
           );
 
-          return result.rows[0];
+          const user = result.rows[0];
+
+          const token = await jwt.sign({
+            id: user.id,
+            email: user.email,
+            username: user.username,
+          });
+
+          return {
+            token,
+            user: {
+              id: user.id,
+              email: user.email,
+              username: user.username,
+            },
+          };
         } catch (error) {
           console.error("Error creating user:", error);
           set.status = 500;

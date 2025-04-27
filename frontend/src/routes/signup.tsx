@@ -1,111 +1,106 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useSignup } from "@/hooks/use-user";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import axios from "axios";
-import { FormEvent } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <SignUp />;
+  return <SignupForm />;
 }
 
-const SignUp = () => {
+const SignupForm = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
   const navigate = useNavigate();
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+  const { mutate: signup, error, isError, isSuccess, isPending } = useSignup();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const formElement = e.target as HTMLFormElement;
-    try {
-      const formData = Object.fromEntries(new FormData(formElement).entries());
-      const response = await axios({
-        url: formElement.action,
-        method: formElement.method,
-        data: formData,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status === 200) {
-        navigate({
-          to: "/dashboard",
-        });
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  }
-
-  const signUpSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 characters"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-  });
-
-  const form = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
+    signup(formData);
+    setFormData({
       username: "",
+      email: "",
       password: "",
-    },
-  });
+    });
+    if (isSuccess) {
+      navigate({ to: "/dashboard" });
+    }
+  };
+
   return (
-    <article>
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center">Create an account</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form className="space-y-6">
-              {/* <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6"> */}
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input {...field} id="username" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} id="password" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full">
-                Continue
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </article>
+    <Card className="w-full min-w-md">
+      <CardHeader>
+        <CardTitle>Create an Account</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          {isError && (
+            <div className="bg-red-100 text-red-800 rounded-md p-4">
+              <h3>{error.message}</h3>
+            </div>
+          )}
+
+          {isSuccess && (
+            <div className="bg-green-100 text-green-800 rounded-md p-4">
+              <h3>Account created! Please log in.</h3>
+            </div>
+          )}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Creating Account..." : "Sign Up"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };

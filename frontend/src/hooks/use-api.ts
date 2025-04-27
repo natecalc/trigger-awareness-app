@@ -7,7 +7,7 @@ const get = async (authToken: string, uri: string) => {
   try {
     const response = await axios.get(API_URL + uri, {
       headers: {
-        Authorization: `Bearer: ${authToken}`,
+        Authorization: `Bearer ${authToken}`,
       },
     });
 
