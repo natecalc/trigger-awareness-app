@@ -20,3 +20,40 @@ export const loadFormData = (step: string): Partial<TriggerEventDto> => {
 export const clearFormData = () => {
   localStorage.removeItem("multistepForm");
 };
+
+type StorageType = "session" | "local";
+
+export const useStorage = () => {
+  const isBrowser = typeof window !== "undefined";
+
+  const getItem = (key: string, type: StorageType = "local"): string | null => {
+    if (!isBrowser) return null;
+
+    return type === "local"
+      ? localStorage.getItem(key)
+      : sessionStorage.getItem(key);
+  };
+
+  const setItem = (
+    key: string,
+    value: string,
+    type: StorageType = "local"
+  ): void => {
+    if (!isBrowser) return;
+
+    if (type === "local") localStorage.setItem(key, value);
+    if (type === "session") sessionStorage.setItem(key, value);
+  };
+
+  const removeItem = (key: string, type: StorageType = "local"): void => {
+    if (!isBrowser) return;
+    if (type === "local") localStorage.removeItem(key);
+    if (type === "session") sessionStorage.removeItem(key);
+  };
+
+  return {
+    getItem,
+    setItem,
+    removeItem,
+  };
+};

@@ -11,23 +11,23 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SignupImport } from './routes/signup'
 import { Route as DashboardImport } from './routes/dashboard'
+import { Route as AuthImport } from './routes/auth'
 import { Route as IndexImport } from './routes/index'
 import { Route as TriggersIndexImport } from './routes/triggers/index'
 import { Route as TriggersTriggerIdImport } from './routes/triggers/$triggerId'
 
 // Create/Update Routes
 
-const SignupRoute = SignupImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const DashboardRoute = DashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthRoute = AuthImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -60,18 +60,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardImport
-      parentRoute: typeof rootRoute
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
     '/triggers/$triggerId': {
@@ -95,16 +95,16 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
-  '/signup': typeof SignupRoute
   '/triggers/$triggerId': typeof TriggersTriggerIdRoute
   '/triggers': typeof TriggersIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
-  '/signup': typeof SignupRoute
   '/triggers/$triggerId': typeof TriggersTriggerIdRoute
   '/triggers': typeof TriggersIndexRoute
 }
@@ -112,27 +112,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
-  '/signup': typeof SignupRoute
   '/triggers/$triggerId': typeof TriggersTriggerIdRoute
   '/triggers/': typeof TriggersIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/dashboard'
-    | '/signup'
-    | '/triggers/$triggerId'
-    | '/triggers'
+  fullPaths: '/' | '/auth' | '/dashboard' | '/triggers/$triggerId' | '/triggers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/signup' | '/triggers/$triggerId' | '/triggers'
+  to: '/' | '/auth' | '/dashboard' | '/triggers/$triggerId' | '/triggers'
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/dashboard'
-    | '/signup'
     | '/triggers/$triggerId'
     | '/triggers/'
   fileRoutesById: FileRoutesById
@@ -140,16 +135,16 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
-  SignupRoute: typeof SignupRoute
   TriggersTriggerIdRoute: typeof TriggersTriggerIdRoute
   TriggersIndexRoute: typeof TriggersIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
-  SignupRoute: SignupRoute,
   TriggersTriggerIdRoute: TriggersTriggerIdRoute,
   TriggersIndexRoute: TriggersIndexRoute,
 }
@@ -165,8 +160,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/auth",
         "/dashboard",
-        "/signup",
         "/triggers/$triggerId",
         "/triggers/"
       ]
@@ -174,11 +169,11 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.tsx"
     },
+    "/auth": {
+      "filePath": "auth.tsx"
+    },
     "/dashboard": {
       "filePath": "dashboard.tsx"
-    },
-    "/signup": {
-      "filePath": "signup.tsx"
     },
     "/triggers/$triggerId": {
       "filePath": "triggers/$triggerId.tsx"
