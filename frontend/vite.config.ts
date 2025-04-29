@@ -31,6 +31,8 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       manifest: true,
+      outDir: "dist",
+      copyPublicDir: true,
     },
   };
 });
