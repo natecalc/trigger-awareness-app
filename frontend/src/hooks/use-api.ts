@@ -2,7 +2,12 @@ import axios from "axios";
 import { TriggerEventDto } from "./use-triggers";
 import { useStorage } from "@/helpers/storage";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+let API_URL;
+if (import.meta.env.PROD) {
+  API_URL = "https://trigger-awareness-app.vercel.app";
+} else {
+  API_URL = "http://localhost:3000";
+}
 
 const get = async (authToken: string, uri: string) => {
   try {
