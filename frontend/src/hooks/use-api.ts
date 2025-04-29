@@ -2,7 +2,9 @@ import axios from "axios";
 import { TriggerEventDto } from "./use-triggers";
 import { useStorage } from "@/helpers/storage";
 
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
+console.log("API_URL", API_URL);
 
 const get = async (authToken: string, uri: string) => {
   try {
