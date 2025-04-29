@@ -51,9 +51,16 @@ export const useStorage = () => {
     if (type === "session") sessionStorage.removeItem(key);
   };
 
+  const clearStorage = (type: StorageType = "local"): void => {
+    if (!isBrowser) return;
+    if (type === "local") localStorage.clear();
+    if (type === "session") sessionStorage.clear();
+  };
+
   return {
     getItem,
     setItem,
+    clearStorage,
     removeItem,
   };
 };

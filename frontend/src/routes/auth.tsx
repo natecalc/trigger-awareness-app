@@ -113,7 +113,6 @@ const SignupForm = () => {
   });
 
   const { user, signup, userError, isUserLoading } = useContext(AuthContext);
-  console.log("User from context:", user);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,6 +121,7 @@ const SignupForm = () => {
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     signup(formData);
     setFormData({
       username: "",

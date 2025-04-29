@@ -1,5 +1,6 @@
 import axios from "axios";
 import { TriggerEventDto } from "./use-triggers";
+import { useStorage } from "@/helpers/storage";
 
 export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -63,13 +64,15 @@ const patch = async (
   }
 };
 
-export const useApi = (authToken?: string) => {
-  const token = authToken || "";
+export const useApi = () => {
+  const { getItem } = useStorage();
+  const token = () => getItem("token") || "";
   return {
-    get: async (url: string) => get(token, url),
-    post: async (url: string, data?: any | FormData) => post(token, url, data),
-    del: async (url: string) => del(token, url),
+    get: async (url: string) => get(token(), url),
+    post: async (url: string, data?: any | FormData) =>
+      post(token(), url, data),
+    del: async (url: string) => del(token(), url),
     patch: async (url: string, data?: any | FormData) =>
-      patch(token, url, data),
+      patch(token(), url, data),
   };
 };

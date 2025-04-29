@@ -17,10 +17,13 @@ export interface LoginCredentials {
 }
 
 interface AuthApiResponse {
-  id: number;
-  username: string;
-  email: string;
   token: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    token: string;
+  };
 }
 
 export const useSignup = () => {
@@ -40,10 +43,9 @@ export const useSignup = () => {
       }
     },
     onSuccess: async (data) => {
-      console.log("Signup successful", data);
       toast("Signup Successful", {
         icon: "✅",
-        description: `Welcome to the community, ${data.username}!`,
+        description: `Welcome to the community, ${data.user.username}!`,
         duration: 3000,
         action: {
           label: "Close",
@@ -90,10 +92,9 @@ export const useLogin = () => {
       }
     },
     onSuccess: async (data) => {
-      console.log("Login successful", data);
       toast("Login Successful", {
         icon: "✅",
-        description: `Welcome back, ${data.username}!`,
+        description: `Welcome back, ${data.user.username}!`,
         duration: 3000,
         action: {
           label: "Close",

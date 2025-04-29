@@ -31,6 +31,7 @@ const serverSetup = async () => {
         name: "jwt",
         secret:
           process.env.JWT_SECRET || "your-secret-key-change-in-production",
+        exp: "7d",
       })
     )
     .derive(({ headers, jwt, set }) => {
@@ -43,14 +44,25 @@ const serverSetup = async () => {
           }
 
           const token = authHeader.split(" ")[1];
-          const payload = await jwt.verify(token);
-
-          if (!payload) {
+          if (!token) {
             set.status = 401;
             return null;
           }
 
-          return payload;
+          try {
+            const payload = await jwt.verify(token);
+
+            if (!payload || !payload.id) {
+              set.status = 401;
+              return null;
+            }
+
+            return payload;
+          } catch (error) {
+            console.error("JWT verification error:", error);
+            set.status = 401;
+            return null;
+          }
         },
       };
     })
@@ -225,7 +237,9 @@ const serverSetup = async () => {
         if (!user) return { error: "Unauthorized" };
 
         const limit = query.limit ?? 10;
-        console.log("Fetching triggers with limit", limit);
+        console.log(
+          `Fetching triggers for user ${user.id} with limit ${limit}`
+        );
 
         try {
           const result = await db.query(
@@ -262,11 +276,11 @@ const serverSetup = async () => {
     )
     .post(
       "/triggers",
-      async ({ db, body, authenticate }) => {
+      async ({ db, body, authenticate, set }) => {
         const user = await authenticate();
         if (!user) return { error: "Unauthorized" };
 
-        console.log("Posting new trigger", body);
+        console.log(`Creating new trigger for user ${user.id}`);
 
         const insertTriggerQuery = `
         INSERT INTO triggers (user_id, trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity)
@@ -284,7 +298,7 @@ const serverSetup = async () => {
             body.triggerName,
             body.intensity,
           ]);
-
+          set.status = 201;
           return result.rows[0];
         } catch (error) {
           console.error("Error inserting trigger:", error);
@@ -306,43 +320,63 @@ const serverSetup = async () => {
         }),
       }
     )
-    .get("/triggers/:id", async ({ db, params, authenticate }) => {
-      const user = await authenticate();
-      if (!user) return { error: "Unauthorized" };
-
-      console.log("Fetching trigger with id", params.id);
-
-      try {
-        const result = await db.query(
-          `
-          SELECT * FROM triggers WHERE id = $1 AND user_id = $2
-        `,
-          [params.id, user.id]
-        );
-
-        return result.rows[0];
-      } catch (error) {
-        console.error("Error fetching trigger:", error);
-        return {
-          status: 500,
-          message: "Internal Server Error",
-        };
-      }
-    })
-    .delete(
+    .get(
       "/triggers/:id",
       async ({ db, params, authenticate }) => {
         const user = await authenticate();
         if (!user) return { error: "Unauthorized" };
 
-        console.log("Deleting trigger with id", params.id);
+        console.log(`Fetching trigger id ${params.id} for user ${user.id}`);
 
         try {
           const result = await db.query(
             `
-            DELETE FROM triggers WHERE id = $1 AND user_id = $2
-            RETURNING *
+          SELECT * FROM triggers 
+          WHERE id = $1 AND user_id = $2
           `,
+            [params.id, user.id]
+          );
+
+          return result.rows[0];
+        } catch (error) {
+          console.error("Error fetching trigger:", error);
+          return {
+            status: 500,
+            message: "Internal Server Error",
+          };
+        }
+      },
+      {
+        params: t.Object({
+          id: t.String(),
+        }),
+      }
+    )
+    .delete(
+      "/triggers/:id",
+      async ({ db, params, authenticate, set }) => {
+        const user = await authenticate();
+        if (!user) return { error: "Unauthorized" };
+
+        console.log(`Deleting trigger id ${params.id} for user ${user.id}`);
+
+        const checkOwnership = await db.query(
+          "SELECT id FROM triggers WHERE id = $1 AND user_id = $2",
+          [params.id, user.id]
+        );
+
+        if (checkOwnership.rows.length === 0) {
+          set.status = 404;
+          return { error: "Trigger not found" };
+        }
+
+        try {
+          const result = await db.query(
+            `
+            DELETE FROM triggers 
+            WHERE id = $1 AND user_id = $2
+            RETURNING *
+            `,
             [params.id, user.id]
           );
 
@@ -363,22 +397,34 @@ const serverSetup = async () => {
     )
     .patch(
       "/triggers/:id",
-      async ({ db, params, body, authenticate }) => {
+      async ({ db, params, body, authenticate, set }) => {
         const user = await authenticate();
         if (!user) return { error: "Unauthorized" };
 
-        console.log("Updating trigger with id", params.id, body);
+        console.log(`Updating trigger id ${params.id} for user ${user.id}`);
+
+        const checkOwnership = await db.query(
+          "SELECT id FROM triggers WHERE id = $1 AND user_id = $2",
+          [params.id, user.id]
+        );
+
+        if (checkOwnership.rows.length === 0) {
+          set.status = 404;
+          return { error: "Trigger not found" };
+        }
+
         const updateTriggerQuery = `
-        UPDATE triggers
-        SET trigger_event = COALESCE($1, trigger_event),
-            factual_description = COALESCE($2, factual_description),
-            emotions = COALESCE($3, emotions),
-            meaning = COALESCE($4, meaning),
-            past_relationship = COALESCE($5, past_relationship),
-            trigger_name = COALESCE($6, trigger_name),
-            intensity = COALESCE($7, intensity)
-        WHERE id = $8 AND user_id = $9
-        RETURNING *`;
+    UPDATE triggers
+    SET trigger_event = COALESCE($1, trigger_event),
+        factual_description = COALESCE($2, factual_description),
+        emotions = COALESCE($3, emotions),
+        meaning = COALESCE($4, meaning),
+        past_relationship = COALESCE($5, past_relationship),
+        trigger_name = COALESCE($6, trigger_name),
+        intensity = COALESCE($7, intensity)
+    WHERE id = $8 AND user_id = $9
+    RETURNING *`;
+
         try {
           const result = await db.query(updateTriggerQuery, [
             body.triggerEvent,

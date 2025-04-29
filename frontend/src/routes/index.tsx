@@ -13,12 +13,13 @@ import { ChevronsRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import EmotionSelector from "@/components/emotion-picker";
 import { Slider } from "@/components/ui/slider";
 import { clearFormData, loadFormData, saveFormData } from "@/helpers/storage";
+import { AuthContext } from "@/providers/auth-provider";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -263,6 +264,15 @@ function Index() {
                     There was an error submitting your trigger. Please try
                     again.
                   </p>
+                  <Button
+                    className="mt-4 w-full"
+                    variant="default"
+                    onClick={() => {
+                      setTriggerFormStep(0);
+                    }}
+                  >
+                    Try again
+                  </Button>
                 </section>
               ) : (
                 <section>
@@ -706,6 +716,7 @@ const NameThisPattern = ({
   form: UseFormReturn<any>;
   handleAddTrigger: () => void;
 }) => {
+  const { user } = useContext(AuthContext);
   const triggerNameValue = form.watch("triggerName");
   const isDisabled =
     !triggerNameValue ||
@@ -749,16 +760,22 @@ const NameThisPattern = ({
         <Button variant="secondary" onClick={backStep}>
           Back
         </Button>
-        <Button
-          disabled={isDisabled}
-          onClick={() => {
-            form.setValue("triggerName", form.getValues().triggerName);
-            nextStep();
-            handleAddTrigger(); // Last step which clear local storage too
-          }}
-        >
-          Submit Trigger
-        </Button>
+        {!user ? (
+          <Button asChild>
+            <Link to="/auth">Login or Signup</Link>
+          </Button>
+        ) : (
+          <Button
+            disabled={isDisabled}
+            onClick={() => {
+              form.setValue("triggerName", form.getValues().triggerName);
+              nextStep();
+              handleAddTrigger(); // Last step which clear local storage too
+            }}
+          >
+            Submit Trigger
+          </Button>
+        )}
       </footer>
     </article>
   );

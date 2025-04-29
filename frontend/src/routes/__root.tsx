@@ -91,6 +91,7 @@ function Header({ pathname }: { pathname: string }) {
           <Link
             to="/triggers"
             search={pathname === "/triggers" ? "" : pathname}
+            className={`${user ? "visible" : "invisible"}`}
           >
             Triggers
           </Link>
@@ -121,7 +122,7 @@ function Header({ pathname }: { pathname: string }) {
         <Button
           variant="outline"
           onClick={() => {
-            navigate({ to: "/" });
+            navigate({ to: "/auth" });
           }}
         >
           Login

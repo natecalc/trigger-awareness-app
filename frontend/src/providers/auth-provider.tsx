@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userError, setUserError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const { getItem, removeItem } = useStorage();
+  const { getItem, removeItem, clearStorage } = useStorage();
   const { data: currUser, isPending, error, refetch } = useUser();
   const { mutate: signup } = useSignup();
   const { mutate: login } = useLogin();
@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     removeItem("token");
     removeItem("user");
+    clearStorage("session");
     setUser(undefined);
     setIsAuthenticated(false);
     setUserError(null);

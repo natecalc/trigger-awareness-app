@@ -10,14 +10,12 @@ export interface UserDto {
 }
 
 export const useUser = () => {
-  const authToken = localStorage.getItem("token") || "";
+  const { get } = useApi();
 
-  const { get } = useApi(authToken);
   return useQuery<UserDto>({
-    queryKey: ["user", authToken],
+    queryKey: ["user"],
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!authToken,
     queryFn: async () => {
       const response = await get("/users/me");
       return response.data;
