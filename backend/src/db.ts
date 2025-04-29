@@ -1,19 +1,22 @@
 import { migrate } from "***REMOVED***-migrations";
 import pg from "pg";
 import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config({ path: "../.env" });
 
 const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
 
 export const createDb = async () => {
   const isProduction = PGHOST && PGDATABASE && PGUSER && PGPASSWORD;
 
-  const connectionConfig = true
+  const connectionConfig = isProduction
     ? {
-        user: PGUSER,
-        password: PGPASSWORD,
-        host: PGHOST,
+        user: process.env.PGUSER,
+        password: process.env.PGPASSWORD,
+        host: process.env.PGHOST,
         port: 5432, // Neon typically uses standard PostgreSQL port
-        database: PGDATABASE,
+        database: process.env.PGDATABASE,
         ssl: {
           rejectUnauthorized: false,
         },
