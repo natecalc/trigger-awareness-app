@@ -4,7 +4,7 @@ import { useStorage } from "@/helpers/storage";
 
 let API_URL;
 if (import.meta.env.PROD) {
-  API_URL = "https://trigger-awareness-app.vercel.app";
+  API_URL = "https://trigger-awareness-app.onrender.com";
 } else {
   API_URL = "http://localhost:3000";
 }
