@@ -4,7 +4,7 @@ import { useStorage } from "@/helpers/storage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-console.log("API_URL", API_URL);
+console.log(API_URL);
 
 const get = async (authToken: string, uri: string) => {
   try {

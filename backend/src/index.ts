@@ -18,8 +18,8 @@ const serverSetup = async () => {
     .use(
       cors({
         origin: [
+          "https://trigger-awareness-app.vercel.app",
           "http://localhost:5173",
-          "https://trigger-awareness-app-frontend.onrender.com",
         ],
         methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         credentials: true,
