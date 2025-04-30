@@ -4,7 +4,7 @@ import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({}) => {
   return {
     plugins: [
       TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
@@ -22,5 +22,8 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       copyPublicDir: true,
     },
+    logLevel: "info",
+    envPrefix: "VITE_",
+    envDir: "../",
   };
 });

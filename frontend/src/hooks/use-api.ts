@@ -2,7 +2,7 @@ import axios from "axios";
 import { TriggerEventDto } from "./use-triggers";
 import { useStorage } from "@/helpers/storage";
 
-const API_URL = import.meta.env.DATABASE_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_DATABASE_URL || "http://localhost:3000";
 
 const get = async (authToken: string, uri: string) => {
   try {
