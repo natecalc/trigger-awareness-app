@@ -20,6 +20,16 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
 const HEADER_HEIGHT = 64;
 export const queryClient = new QueryClient();
@@ -77,6 +87,34 @@ function Header({ pathname }: { pathname: string }) {
       className={`fixed top-0 left-0 w-full bg-white shadow-md z-10 h-[${HEADER_HEIGHT}px] justify-between flex items-center p-4`}
     >
       <div className="flex flex-row items-center space-x-4">
+        <Sheet>
+          <SheetTrigger className="sm:hidden flex">
+            <Button asChild variant="ghost" size="icon">
+              <Menu />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-3/4 p-4">
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+              <SheetDescription>Navigate through the app</SheetDescription>
+            </SheetHeader>
+            <nav className="p-2 gap-2 text-lg flex flex-col">
+              <SheetClose asChild>
+                <Link to="/">Home</Link>
+              </SheetClose>
+
+              <SheetClose asChild>
+                <Link
+                  to="/triggers"
+                  search={pathname === "/triggers" ? "" : pathname}
+                  className={`${user ? "visible" : "invisible"}`}
+                >
+                  Triggers
+                </Link>
+              </SheetClose>
+            </nav>
+          </SheetContent>
+        </Sheet>
         <img
           src="/logo.png"
           alt="TriggerMap Logo"
@@ -85,7 +123,7 @@ function Header({ pathname }: { pathname: string }) {
           className="rounded-full"
         />
         <h1 className="text-xl font-bold">TriggerMap </h1>
-        <nav className="p-2 flex gap-2 text-lg">
+        <nav className="p-2 gap-2 text-lg hidden sm:flex">
           <Link to="/">Home</Link>
 
           <Link
