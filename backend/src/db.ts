@@ -3,35 +3,30 @@ import pg from "pg";
 import path from "path";
 import dotenv from "dotenv";
 
-dotenv.config();
-dotenv.config({ path: "../.env.local", override: true });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const isProduction = process.env.NODE_ENV === "production";
 
-if (isProduction) {
-  dotenv.config({ path: "../.env.production", override: true });
-}
+console.log(`Environment: ${isProduction ? "Production" : "Development"}`);
 
 export const createDb = async () => {
   const connectionConfig = isProduction
     ? {
-        user: process.env.PGUSER,
-        password: process.env.PGPASSWORD,
-        host: process.env.PGHOST,
-        port: 5432,
-        database: process.env.PGDATABASE,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || "5432"),
+        database: process.env.DB_NAME,
         ssl: {
           rejectUnauthorized: false,
         },
       }
     : {
-        user: process.env.POSTGRES_USER,
-        password: process.env.POSTGRES_PASSWORD,
-        host: process.env.POSTGRES_HOST,
-        port: parseInt(
-          process.env.DOCKER_PORT || process.env.POSTGRES_PORT || "5432"
-        ),
-        database: process.env.POSTGRES_DB,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || "5432"),
+        database: process.env.DB_NAME,
         ssl: false,
       };
 

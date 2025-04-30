@@ -5,8 +5,9 @@ import { cors } from "@elysiajs/cors";
 import dotenv from "dotenv";
 import swagger from "@elysiajs/swagger";
 import jwt from "@elysiajs/jwt";
+import path from "path";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const port = process.env.PORT || 3000;
 

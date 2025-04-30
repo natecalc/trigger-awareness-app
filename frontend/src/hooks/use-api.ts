@@ -6,8 +6,6 @@ const API_URL =
   import.meta.env.VITE_API_URL ||
   `http://${import.meta.env.VITE_API_HOST || "localhost"}:${import.meta.env.VITE_API_PORT || "3000"}`;
 
-console.log("API_URL", API_URL);
-
 const get = async (authToken: string, uri: string) => {
   try {
     const response = await axios.get(API_URL + uri, {
