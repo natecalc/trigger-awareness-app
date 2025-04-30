@@ -1,13 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useContext, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AuthContext } from "@/providers/auth-provider";
-import { LoginCredentials } from "@/hooks/use-auth";
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useContext, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AuthContext } from '@/providers/auth-provider';
+import { LoginCredentials } from '@/hooks/use-auth';
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute('/auth')({
   component: RouteComponent,
 });
 
@@ -19,25 +19,25 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center w-full max-w-md">
+    <article className="flex w-full flex-col items-center justify-center py-8">
+      <section className="flex w-full max-w-md flex-col items-center justify-center">
         {isLogin ? <LoginForm /> : <SignupForm />}
         <Button
           variant="link"
           onClick={() => setIsLogin((prev) => !prev)}
           className="mt-4"
         >
-          {isLogin ? "Create an account" : "Already have an account?"}
+          {isLogin ? 'Create an account' : 'Already have an account?'}
         </Button>
-      </div>
-    </div>
+      </section>
+    </article>
   );
 };
 
 const LoginForm = () => {
   const [formData, setFormData] = useState<LoginCredentials>({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
 
   const { user, login, userError, isUserLoading } = useContext(AuthContext);
@@ -52,16 +52,16 @@ const LoginForm = () => {
     e.preventDefault();
     login(formData);
     setFormData({
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     });
     if (user) {
-      navigate({ to: "/dashboard" });
+      navigate({ to: '/dashboard' });
     }
   };
 
   return (
-    <Card className="w-full min-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Login</CardTitle>
       </CardHeader>
@@ -91,13 +91,13 @@ const LoginForm = () => {
             />
           </div>
           {userError && (
-            <div className="bg-red-100 text-red-800 rounded-md p-4">
+            <div className="rounded-md bg-red-100 p-4 text-red-800">
               <h3>{userError.message}</h3>
             </div>
           )}
 
           <Button type="submit" className="w-full" disabled={isUserLoading}>
-            {isUserLoading ? "Logging in..." : "Login"}
+            {isUserLoading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
       </CardContent>
@@ -107,9 +107,9 @@ const LoginForm = () => {
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
+    username: '',
+    email: '',
+    password: '',
   });
 
   const { user, signup, userError, isUserLoading } = useContext(AuthContext);
@@ -124,17 +124,17 @@ const SignupForm = () => {
     e.preventDefault();
     signup(formData);
     setFormData({
-      username: "",
-      email: "",
-      password: "",
+      username: '',
+      email: '',
+      password: '',
     });
     if (user) {
-      navigate({ to: "/dashboard" });
+      navigate({ to: '/dashboard' });
     }
   };
 
   return (
-    <Card className="w-full min-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Create an Account</CardTitle>
       </CardHeader>
@@ -176,13 +176,13 @@ const SignupForm = () => {
             />
           </div>
           {userError && (
-            <div className="bg-red-100 text-red-800 rounded-md p-4">
+            <div className="rounded-md bg-red-100 p-4 text-red-800">
               <h3>{userError.message}</h3>
             </div>
           )}
 
           <Button type="submit" className="w-full" disabled={isUserLoading}>
-            {isUserLoading ? "Creating Account..." : "Sign Up"}
+            {isUserLoading ? 'Creating Account...' : 'Sign Up'}
           </Button>
         </form>
       </CardContent>

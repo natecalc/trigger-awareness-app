@@ -1,13 +1,13 @@
-import { Elysia, t } from "elysia";
-import { createDb } from "./db";
-import { faker } from "@faker-js/faker";
-import { cors } from "@elysiajs/cors";
-import dotenv from "dotenv";
-import swagger from "@elysiajs/swagger";
-import jwt from "@elysiajs/jwt";
-import path from "path";
+import { Elysia, t } from 'elysia';
+import { createDb } from './db';
+import { faker } from '@faker-js/faker';
+import { cors } from '@elysiajs/cors';
+import dotenv from 'dotenv';
+import swagger from '@elysiajs/swagger';
+import jwt from '@elysiajs/jwt';
+import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const port = process.env.PORT || 3000;
 
@@ -19,32 +19,32 @@ const serverSetup = async () => {
     .use(
       cors({
         origin: [
-          "https://trigger-awareness-app.vercel.app",
-          "http://localhost:5173",
+          'https://trigger-awareness-app.vercel.app',
+          'http://localhost:5173',
         ],
-        methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
         credentials: true,
-        allowedHeaders: ["Content-Type", "Authorization"],
+        allowedHeaders: ['Content-Type', 'Authorization'],
       })
     )
     .use(
       jwt({
-        name: "jwt",
+        name: 'jwt',
         secret:
-          process.env.JWT_SECRET || "your-secret-key-change-in-production",
-        exp: "7d",
+          process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+        exp: '7d',
       })
     )
     .derive(({ headers, jwt, set }) => {
       return {
         authenticate: async () => {
           const authHeader = headers.authorization;
-          if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          if (!authHeader || !authHeader.startsWith('Bearer ')) {
             set.status = 401;
             return null;
           }
 
-          const token = authHeader.split(" ")[1];
+          const token = authHeader.split(' ')[1];
           if (!token) {
             set.status = 401;
             return null;
@@ -60,18 +60,18 @@ const serverSetup = async () => {
 
             return payload;
           } catch (error) {
-            console.error("JWT verification error:", error);
+            console.error('JWT verification error:', error);
             set.status = 401;
             return null;
           }
         },
       };
     })
-    .decorate("db", db)
-    .get("/ping", () => "pong")
-    .get("/", () => "Hello Elysia")
+    .decorate('db', db)
+    .get('/ping', () => 'pong')
+    .get('/', () => 'Hello Elysia')
     .post(
-      "/auth/signup",
+      '/auth/signup',
       async ({ db, body, jwt, set }) => {
         try {
           const existingUser = await db.query(
@@ -81,13 +81,13 @@ const serverSetup = async () => {
 
           if (existingUser.rows.length > 0) {
             set.status = 400;
-            return { error: "User already exists" };
+            return { error: 'User already exists' };
           }
 
           const passwordHash = await Bun.password.hash(body.password);
 
           const result = await db.query(
-            "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email",
+            'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email',
             [body.username, body.email, passwordHash]
           );
 
@@ -108,9 +108,9 @@ const serverSetup = async () => {
             },
           };
         } catch (error) {
-          console.error("Error creating user:", error);
+          console.error('Error creating user:', error);
           set.status = 500;
-          return { error: "Server error" };
+          return { error: 'Server error' };
         }
       },
       {
@@ -122,7 +122,7 @@ const serverSetup = async () => {
       }
     )
     .post(
-      "/auth/login",
+      '/auth/login',
       async ({ db, body, jwt, set }) => {
         try {
           const result = await db.query(
@@ -132,7 +132,7 @@ const serverSetup = async () => {
 
           if (result.rows.length === 0) {
             set.status = 401;
-            return { error: "Invalid credentials" };
+            return { error: 'Invalid credentials' };
           }
 
           const user = result.rows[0];
@@ -143,7 +143,7 @@ const serverSetup = async () => {
           );
           if (!isMatch) {
             set.status = 401;
-            return { error: "Invalid credentials" };
+            return { error: 'Invalid credentials' };
           }
 
           const token = await jwt.sign({
@@ -161,9 +161,9 @@ const serverSetup = async () => {
             },
           };
         } catch (error) {
-          console.error("Error during login:", error);
+          console.error('Error during login:', error);
           set.status = 500;
-          return { error: "Server error" };
+          return { error: 'Server error' };
         }
       },
       {
@@ -173,35 +173,35 @@ const serverSetup = async () => {
         }),
       }
     )
-    .get("/users/me", async ({ authenticate, db }) => {
+    .get('/users/me', async ({ authenticate, db }) => {
       const user = await authenticate();
-      if (!user) return { error: "Unauthorized" };
+      if (!user) return { error: 'Unauthorized' };
 
       try {
         const result = await db.query(
-          "SELECT id, username, email FROM users WHERE id = $1",
+          'SELECT id, username, email FROM users WHERE id = $1',
           [user.id]
         );
 
         return result.rows[0];
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error('Error fetching user:', error);
         return {
           status: 500,
-          message: "Internal Server Error",
+          message: 'Internal Server Error',
         };
       }
     })
-    .post("/seed", async ({ db, authenticate }) => {
+    .post('/seed', async ({ db, authenticate }) => {
       const user = await authenticate();
-      if (!user) return { error: "Unauthorized" };
+      if (!user) return { error: 'Unauthorized' };
 
-      console.log("Seeding database with test data for user", user.id);
+      console.log('Seeding database with test data for user', user.id);
 
       const client = await db.connect();
 
       try {
-        await client.query("BEGIN");
+        await client.query('BEGIN');
 
         const insertTriggerQuery = `
         INSERT INTO triggers (user_id, trigger_event, factual_description, emotions, meaning, past_relationship, trigger_name, intensity) 
@@ -221,21 +221,21 @@ const serverSetup = async () => {
           ]);
         }
 
-        await client.query("COMMIT");
+        await client.query('COMMIT');
 
-        return { message: "Database seeded successfully" };
+        return { message: 'Database seeded successfully' };
       } catch (e) {
-        await client.query("ROLLBACK");
+        await client.query('ROLLBACK');
         throw e;
       } finally {
         client.release();
       }
     })
     .get(
-      "/triggers",
+      '/triggers',
       async ({ db, query, authenticate }) => {
         const user = await authenticate();
-        if (!user) return { error: "Unauthorized" };
+        if (!user) return { error: 'Unauthorized' };
 
         const limit = query.limit ?? 10;
         console.log(
@@ -262,10 +262,10 @@ const serverSetup = async () => {
 
           return result.rows;
         } catch (error) {
-          console.error("Error fetching triggers:", error);
+          console.error('Error fetching triggers:', error);
           return {
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
           };
         }
       },
@@ -276,10 +276,10 @@ const serverSetup = async () => {
       }
     )
     .post(
-      "/triggers",
+      '/triggers',
       async ({ db, body, authenticate, set }) => {
         const user = await authenticate();
-        if (!user) return { error: "Unauthorized" };
+        if (!user) return { error: 'Unauthorized' };
 
         console.log(`Creating new trigger for user ${user.id}`);
 
@@ -302,10 +302,10 @@ const serverSetup = async () => {
           set.status = 201;
           return result.rows[0];
         } catch (error) {
-          console.error("Error inserting trigger:", error);
+          console.error('Error inserting trigger:', error);
           return {
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
           };
         }
       },
@@ -322,10 +322,10 @@ const serverSetup = async () => {
       }
     )
     .get(
-      "/triggers/:id",
+      '/triggers/:id',
       async ({ db, params, authenticate }) => {
         const user = await authenticate();
-        if (!user) return { error: "Unauthorized" };
+        if (!user) return { error: 'Unauthorized' };
 
         console.log(`Fetching trigger id ${params.id} for user ${user.id}`);
 
@@ -340,10 +340,10 @@ const serverSetup = async () => {
 
           return result.rows[0];
         } catch (error) {
-          console.error("Error fetching trigger:", error);
+          console.error('Error fetching trigger:', error);
           return {
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
           };
         }
       },
@@ -354,21 +354,21 @@ const serverSetup = async () => {
       }
     )
     .delete(
-      "/triggers/:id",
+      '/triggers/:id',
       async ({ db, params, authenticate, set }) => {
         const user = await authenticate();
-        if (!user) return { error: "Unauthorized" };
+        if (!user) return { error: 'Unauthorized' };
 
         console.log(`Deleting trigger id ${params.id} for user ${user.id}`);
 
         const checkOwnership = await db.query(
-          "SELECT id FROM triggers WHERE id = $1 AND user_id = $2",
+          'SELECT id FROM triggers WHERE id = $1 AND user_id = $2',
           [params.id, user.id]
         );
 
         if (checkOwnership.rows.length === 0) {
           set.status = 404;
-          return { error: "Trigger not found" };
+          return { error: 'Trigger not found' };
         }
 
         try {
@@ -383,10 +383,10 @@ const serverSetup = async () => {
 
           return result.rows[0];
         } catch (error) {
-          console.error("Error deleting trigger:", error);
+          console.error('Error deleting trigger:', error);
           return {
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
           };
         }
       },
@@ -397,21 +397,21 @@ const serverSetup = async () => {
       }
     )
     .patch(
-      "/triggers/:id",
+      '/triggers/:id',
       async ({ db, params, body, authenticate, set }) => {
         const user = await authenticate();
-        if (!user) return { error: "Unauthorized" };
+        if (!user) return { error: 'Unauthorized' };
 
         console.log(`Updating trigger id ${params.id} for user ${user.id}`);
 
         const checkOwnership = await db.query(
-          "SELECT id FROM triggers WHERE id = $1 AND user_id = $2",
+          'SELECT id FROM triggers WHERE id = $1 AND user_id = $2',
           [params.id, user.id]
         );
 
         if (checkOwnership.rows.length === 0) {
           set.status = 404;
-          return { error: "Trigger not found" };
+          return { error: 'Trigger not found' };
         }
 
         const updateTriggerQuery = `
@@ -441,10 +441,10 @@ const serverSetup = async () => {
 
           return result.rows[0];
         } catch (error) {
-          console.error("Error updating trigger:", error);
+          console.error('Error updating trigger:', error);
           return {
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
           };
         }
       },
@@ -471,6 +471,6 @@ const serverSetup = async () => {
 };
 
 serverSetup().catch((error) => {
-  console.error("Error starting server:", error);
+  console.error('Error starting server:', error);
   process.exit(1);
 });

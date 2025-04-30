@@ -1,28 +1,28 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { getEmotionColorClassName } from "@/helpers/colors";
-import { formattedDate } from "@/helpers/date";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
+import { getEmotionColorClassName } from '@/helpers/colors';
+import { formattedDate } from '@/helpers/date';
 import {
   TriggerEventDto,
   useDeleteTrigger,
   useTriggerById,
   useUpdateTrigger,
-} from "@/hooks/use-triggers";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Edit, Save, Trash2, X } from "lucide-react";
-import { useState } from "react";
+} from '@/hooks/use-triggers';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
+import { ArrowLeft, Calendar, Edit, Save, Trash2, X } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute("/triggers/$triggerId")({
+export const Route = createFileRoute('/triggers/$triggerId')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const triggerId = useParams({
-    from: "/triggers/$triggerId",
+    from: '/triggers/$triggerId',
     select: (params) => params.triggerId,
   });
   const { data: trigger } = useTriggerById(triggerId);
@@ -69,16 +69,17 @@ function RouteComponent() {
   };
 
   return (
-    <article className="flex flex-col p-4 space-y-4 w-full md:w-3xl ">
+    <article className="flex w-full flex-col space-y-4 p-4 md:w-3xl">
       <section className="flex justify-between">
         <Button
           variant="ghost"
           size="sm"
           asChild
-          className="p-0 h-auto text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+          className="h-auto p-0 text-sm font-medium text-indigo-600 hover:text-indigo-800"
         >
           <Link to="/triggers">
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back to all triggers
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            <p className="hidden sm:inline">Back to triggers</p>
           </Link>
         </Button>
 
@@ -90,7 +91,8 @@ function RouteComponent() {
                 size="sm"
                 onClick={() => setIsEditing(false)}
               >
-                <X className="h-4 w-4 mr-1" /> Cancel
+                <X className="mr-1 h-4 w-4" />
+                <p className="hidden sm:inline">Cancel</p>
               </Button>
               <Button
                 variant="default"
@@ -98,7 +100,8 @@ function RouteComponent() {
                 onClick={handleSave}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
-                <Save className="h-4 w-4 mr-1" /> Save Changes
+                <Save className="mr-1 h-4 w-4" />
+                <p className="hidden sm:inline">Save changes</p>
               </Button>
             </>
           ) : (
@@ -108,7 +111,8 @@ function RouteComponent() {
                 size="sm"
                 onClick={() => setIsEditing(true)}
               >
-                <Edit className="h-4 w-4 mr-1" /> Edit Trigger
+                <Edit className="mr-1 h-4 w-4" />
+                <p className="hidden sm:inline">Edit</p>
               </Button>
               <Dialog
                 open={showDeleteDialog}
@@ -120,7 +124,8 @@ function RouteComponent() {
                     size="sm"
                     onClick={() => setShowDeleteDialog(true)}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    <p className="hidden sm:inline">Delete</p>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -131,7 +136,7 @@ function RouteComponent() {
                     <p className="text-gray-500">
                       This action cannot be undone.
                     </p>
-                    <div className="flex gap-2 mt-4">
+                    <div className="mt-4 flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -159,14 +164,14 @@ function RouteComponent() {
         </div>
       </section>
 
-      <Card className=" shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 border-l-indigo-500">
+      <Card className="border-l-4 border-l-indigo-500 shadow-sm transition-shadow duration-300 hover:shadow-md">
         <CardHeader>
-          <div className="flex justify-between items-center gap-4">
+          <div className="flex items-center justify-between gap-4">
             <h3>
               <strong>Name</strong>
             </h3>
-            <div className="flex items-center text-sm text-gray-500  text-nowrap">
-              <Calendar className="h-4 w-4 mr-1" />
+            <div className="flex items-center text-sm text-nowrap text-gray-500">
+              <Calendar className="mr-1 h-4 w-4" />
               {formattedDate(trigger.createdAt)}
             </div>
           </div>
@@ -174,11 +179,11 @@ function RouteComponent() {
             <Input
               type="text"
               defaultValue={trigger.triggerName}
-              className="text-lg font-semibold "
-              onChange={(e) => onChangeValues(e, "triggerName")}
+              className="text-lg font-semibold"
+              onChange={(e) => onChangeValues(e, 'triggerName')}
             />
           ) : (
-            <CardTitle className="text-lg font-semibold text-indigo-700 ">
+            <CardTitle className="text-lg font-semibold text-indigo-700">
               {trigger.triggerName}
             </CardTitle>
           )}
@@ -192,8 +197,8 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.triggerEvent}
-                className="text-lg font-semibold "
-                onChange={(e) => onChangeValues(e, "triggerEvent")}
+                className="text-lg font-semibold"
+                onChange={(e) => onChangeValues(e, 'triggerEvent')}
               />
             ) : (
               <p className="text-muted-foreground">{trigger.triggerEvent}</p>
@@ -207,8 +212,8 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.factualDescription}
-                className="text-lg font-semibold "
-                onChange={(e) => onChangeValues(e, "factualDescription")}
+                className="text-lg font-semibold"
+                onChange={(e) => onChangeValues(e, 'factualDescription')}
               />
             ) : (
               <p className="text-muted-foreground">
@@ -220,12 +225,12 @@ function RouteComponent() {
             <h3>
               <strong>Emotions</strong>
             </h3>
-            <ul className="list-disc list-inside space-x-1">
+            <ul className="list-inside list-disc space-x-1">
               {trigger.emotions.map((emotion, index) => (
                 <Badge
                   key={index}
                   variant="outline"
-                  className={`${getEmotionColorClassName(emotion)} font-normal py-0.5 `}
+                  className={`${getEmotionColorClassName(emotion)} py-0.5 font-normal`}
                 >
                   {emotion}
                 </Badge>
@@ -233,7 +238,7 @@ function RouteComponent() {
             </ul>
           </div>
           <div className="space-y-2">
-            <h3 className="flex items-center gap-2 w-full justify-between">
+            <h3 className="flex w-full items-center justify-between gap-2">
               <strong>Emotional intensity</strong>
               {isEditing && (
                 <h3>
@@ -267,8 +272,8 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.meaning}
-                className="text-lg font-semibold "
-                onChange={(e) => onChangeValues(e, "meaning")}
+                className="text-lg font-semibold"
+                onChange={(e) => onChangeValues(e, 'meaning')}
               />
             ) : (
               <p className="text-muted-foreground">{trigger.meaning}</p>
@@ -282,8 +287,8 @@ function RouteComponent() {
               <Input
                 type="text"
                 defaultValue={trigger.pastRelationship}
-                className="text-lg font-semibold "
-                onChange={(e) => onChangeValues(e, "pastRelationship")}
+                className="text-lg font-semibold"
+                onChange={(e) => onChangeValues(e, 'pastRelationship')}
               />
             ) : (
               <p className="text-muted-foreground">
