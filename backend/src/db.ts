@@ -3,30 +3,35 @@ import pg from "pg";
 import path from "path";
 import dotenv from "dotenv";
 
-dotenv.config({ path: "../.env" });
+dotenv.config();
+dotenv.config({ path: "../.env.local", override: true });
 
-const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+const isProduction = process.env.NODE_ENV === "production";
+
+if (isProduction) {
+  dotenv.config({ path: "../.env.production", override: true });
+}
 
 export const createDb = async () => {
-  const isProduction = PGHOST && PGDATABASE && PGUSER && PGPASSWORD;
-
   const connectionConfig = isProduction
     ? {
         user: process.env.PGUSER,
         password: process.env.PGPASSWORD,
         host: process.env.PGHOST,
-        port: 5432, // Neon typically uses standard PostgreSQL port
+        port: 5432,
         database: process.env.PGDATABASE,
         ssl: {
           rejectUnauthorized: false,
         },
       }
     : {
-        user: "***REMOVED***",
+        user: process.env.POSTGRES_USER,
         password: process.env.POSTGRES_PASSWORD,
-        host: "127.0.0.1",
-        port: parseInt(process.env.DOCKER_PORT || "5432"),
-        database: "trigger_map",
+        host: process.env.POSTGRES_HOST,
+        port: parseInt(
+          process.env.DOCKER_PORT || process.env.POSTGRES_PORT || "5432"
+        ),
+        database: process.env.POSTGRES_DB,
         ssl: false,
       };
 
