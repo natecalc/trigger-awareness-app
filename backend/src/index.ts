@@ -430,7 +430,7 @@ const serverSetup = async () => {
           const result = await db.query(updateTriggerQuery, [
             body.triggerEvent,
             body.factualDescription,
-            body.emotions ? JSON.stringify(body.emotions) : null,
+            JSON.stringify(body.emotions),
             body.meaning,
             body.pastRelationship,
             body.triggerName,

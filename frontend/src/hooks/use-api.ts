@@ -1,8 +1,8 @@
-import axios from "axios";
-import { TriggerEventDto } from "./use-triggers";
-import { useStorage } from "@/helpers/storage";
+import axios from 'axios';
+import { TriggerEventDto } from './use-triggers';
+import { useStorage } from '@/helpers/storage';
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const get = async (authToken: string, uri: string) => {
   try {
@@ -22,10 +22,10 @@ const post = async (authToken: string, uri: string, data?: any | FormData) => {
   try {
     let headers = {
       Authorization: `Bearer ${authToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
-    const response = await axios.post(API_URL + uri, data || "", {
+    const response = await axios.post(API_URL + uri, data || '', {
       headers,
     });
 
@@ -55,7 +55,7 @@ const patch = async (
 ) => {
   const headers = {
     Authorization: `Bearer ${authToken}`,
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   };
   try {
     return await axios.patch(API_URL + uri, data, { headers });
@@ -66,7 +66,7 @@ const patch = async (
 
 export const useApi = () => {
   const { getItem } = useStorage();
-  const token = () => getItem("token") || "";
+  const token = () => getItem('token') || '';
   return {
     get: async (url: string) => get(token(), url),
     post: async (url: string, data?: any | FormData) =>

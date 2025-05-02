@@ -1,8 +1,8 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useApi } from "./use-api";
-import { queryClient } from "@/routes/__root";
-import { toast } from "sonner";
-import { capitalizeFirstLetter } from "@/helpers/parse";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useApi } from './use-api';
+import { queryClient } from '@/routes/__root';
+import { toast } from 'sonner';
+import { capitalizeFirstLetter } from '@/helpers/parse';
 
 interface TriggerApiResponse {
   id: number;
@@ -43,11 +43,11 @@ interface AddTriggerDto {
 export const useTriggers = () => {
   const { get } = useApi();
   return useQuery<TriggerEventDto[]>({
-    queryKey: ["triggers"],
+    queryKey: ['triggers'],
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
-      const response = await get("/triggers");
+      const response = await get('/triggers');
 
       return response.data.map((item: TriggerApiResponse) => ({
         id: item.id,
@@ -69,21 +69,21 @@ export const useAddTrigger = () => {
   const { post } = useApi();
   return useMutation({
     mutationFn: async (trigger: AddTriggerDto) => {
-      return await post("/triggers", trigger);
+      return await post('/triggers', trigger);
     },
     onSuccess: async () => {
-      toast("New Trigger Added", {
-        icon: "🧘‍♂️",
-        description: "One step closer to emotional clarity.",
+      toast('New Trigger Added', {
+        icon: '🧘‍♂️',
+        description: 'One step closer to emotional clarity.',
         duration: 3000,
         action: {
-          label: "Close",
+          label: 'Close',
           onClick: () => {
             toast.dismiss();
           },
         },
       });
-      await queryClient.invalidateQueries({ queryKey: ["triggers"] });
+      await queryClient.invalidateQueries({ queryKey: ['triggers'] });
     },
   });
 };
@@ -95,18 +95,18 @@ export const useDeleteTrigger = () => {
       return await del(`/triggers/${triggerId}`);
     },
     onSuccess: async () => {
-      toast("Trigger Deleted", {
-        icon: "🗑️",
-        description: "Healing is a process, not a destination.",
+      toast('Trigger Deleted', {
+        icon: '🗑️',
+        description: 'Healing is a process, not a destination.',
         duration: 3000,
         action: {
-          label: "Close",
+          label: 'Close',
           onClick: () => {
             toast.dismiss();
           },
         },
       });
-      await queryClient.invalidateQueries({ queryKey: ["triggers"] });
+      await queryClient.invalidateQueries({ queryKey: ['triggers'] });
     },
   });
 };
@@ -114,7 +114,7 @@ export const useDeleteTrigger = () => {
 export const useTriggerById = (triggerId: string) => {
   const { get } = useApi();
   return useQuery<TriggerEventDto>({
-    queryKey: ["triggers", triggerId],
+    queryKey: ['triggers', triggerId],
     queryFn: async () => {
       const response = await get(`/triggers/${triggerId}`);
       const item = response.data;
@@ -138,10 +138,14 @@ export const useUpdateTrigger = () => {
   const { patch } = useApi();
   return useMutation({
     mutationFn: async (values: Partial<TriggerEventDto>) => {
-      return await patch(`/triggers/${values.id}`, values);
+      const sanitizedValues = {
+        ...values,
+        intensity: values.intensity ? Number(values.intensity) : undefined,
+      };
+      return await patch(`/triggers/${values.id}`, sanitizedValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["triggers"] });
+      queryClient.invalidateQueries({ queryKey: ['triggers'] });
     },
   });
 };
