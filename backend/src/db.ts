@@ -1,4 +1,4 @@
-import { migrate } from '***REMOVED***-migrations';
+import { migrate } from 'postgres-migrations';
 import pg from 'pg';
 import path from 'path';
 import dotenv from 'dotenv';

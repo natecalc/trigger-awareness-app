@@ -19,21 +19,25 @@ A web application for tracking emotional triggers and their impacts.
 ## 🛠️ Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/trigger-tracking-app.git
    cd trigger-tracking-app
    ```
 
 2. Install dependencies:
+
    ```bash
    bun install
    ```
 
 3. Set up environment variables:
    Create a `.env` file in the project root with the following:
+
    ```
-   DATABASE_URL=***REMOVED***ql://username:password@localhost:5432/trigger_map
+   DATABASE_URL=postgresql://username:password@localhost:5432/trigger_map
    ```
+
    Replace `username`, `password` with your PostgreSQL credentials.
 
 4. Run database migrations:

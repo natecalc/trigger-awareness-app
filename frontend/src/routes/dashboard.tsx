@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { TriggersAreaChart } from '@/components/area-chart';
+import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute('/dashboard')({
   component: RouteComponent,
 });
 
@@ -19,6 +20,7 @@ const Dashboard = () => {
       <section className="dashboard stats">
         <h2>Statistics</h2>
         <p>Here are some statistics about your usage:</p>
+        <TriggersAreaChart />
       </section>
 
       <section className="dashboard chart">
